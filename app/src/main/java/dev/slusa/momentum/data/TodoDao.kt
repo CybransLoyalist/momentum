@@ -34,6 +34,13 @@ interface TodoDao {
     @Query("SELECT * FROM todos WHERE id = :id")
     suspend fun byId(id: Long): Todo?
 
+    /**
+     * Otwarte instancje danej reguly. Z zalozenia jest ich zero albo jedna - lista
+     * sluzy do sprzatania po cofnietym odhaczeniu, a nie do wyswietlania.
+     */
+    @Query("SELECT * FROM todos WHERE recurrenceId = :recurrenceId AND completedAt IS NULL")
+    suspend fun openByRecurrence(recurrenceId: Long): List<Todo>
+
     @Insert
     suspend fun insert(todo: Todo): Long
 

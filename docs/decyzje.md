@@ -11,6 +11,58 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-19 · Zadania cykliczne jednak się starzeją
+
+Specyfikacja przeczyła sama sobie. Sekcja 02 mówiła „nawyki i zadania cykliczne nie starzeją
+się — one z definicji wracają jutro”, a sekcja 05 przy regule jednej otwartej instancji —
+„zaległy czynsz przesuwa się na kolejny dzień jak zwykły todo i normalnie czernieje”.
+
+Rozstrzygnięte na korzyść sekcji 05: **zadania cykliczne starzeją się normalnie, nawyki nie.**
+Uzasadnienie z sekcji 02 pasuje wyłącznie do nawyków, bo one faktycznie resetują się co dobę —
+niezrobiony wtorek nie czeka, po prostu przepada. Zaległa instancja zadania cyklicznego nie
+wraca jutro: to wciąż ta sama, jedyna instancja i gnije. Gdyby nie czerniała, nic nie
+sygnalizowałoby spóźnienia, a czynsz zapłacony trzy tygodnie po terminie wyglądałby na ekranie
+tak samo jak zapłacony w terminie.
+
+Praktycznie oznacza to brak wyjątku w kodzie — wiek liczy się z `plannedDate` tak samo dla
+wszystkich todosów. Sekcja 02 spec poprawiona.
+
+**Ślad:** etap 5, `docs/spec.html` sekcja 02.
+
+## 2026-08-19 · Cykliczność w osobnej tabeli, bez własnego tytułu i bez stanu
+
+Reguła powtarzania siedzi w tabeli `recurrences` i ma dokładnie cztery pola ze spec:
+`mode`, `everyN`, `unit`, `anchorDay`. Tytuł zostaje na instancji w `todos` — nowa instancja
+kopiuje go z odhaczonej. Trzymanie tytułu także w regule dałoby dwa źródła prawdy przy zmianie
+nazwy zadania.
+
+Reguła **nie zapamiętuje daty ostatniego wykonania**. Nie musi: `OD_WYKONANIA` liczy od dnia
+odhaczenia, który znamy w momencie generowania, a `KALENDARZOWA` od terminu odhaczonej
+instancji. Każde przechowywane pole stanu to kolejna rzecz, która może rozjechać się z historią —
+ta sama zasada, która wcześniej zdecydowała o liczeniu momentum w locie.
+
+**Ślad:** etap 5, `data/Recurrence.kt`, `domain/Recurring.kt`.
+
+## 2026-08-19 · Zaległy cykl dogania teraźniejszość, nie odtwarza przeszłości
+
+Odhaczenie zadania zaległego o trzy miesiące mogłoby wygenerować kolejny termin też w
+przeszłości, a po następnym odhaczeniu znowu — i zamiast jednej instancji zostałaby kolejka
+zaległości do przeklikania. Generator przesuwa więc termin tyle razy, ile trzeba, żeby wypadł
+po dzisiaj.
+
+Kosztem jest to, że pominięte cykle znikają bez śladu. Świadomie: to apka do robienia rzeczy,
+a nie do rozliczania się z tego, ile razy nie zapłaciło się czynszu na czas.
+
+**Ślad:** etap 5, `Recurring.next`.
+
+## 2026-08-19 · Cofnięcie odhaczenia kasuje wygenerowaną instancję
+
+Odhaczenie zadania cyklicznego tworzy następną instancję od razu. Cofnięcie w oknie doby musi
+więc tę instancję skasować, inaczej po jednym przypadkowym kliknięciu i jego cofnięciu na
+liście zostają dwie kopie tego samego czynszu — a reguła mówi wyraźnie: jedna otwarta instancja.
+
+**Ślad:** etap 5, `TodoRepository.setDone`.
+
 ## 2026-08-19 · Tryb urlopowy jest globalny, nie per-nawyk
 
 Pauza była wcześniej polem nawyku (`pausedFrom`, `pausedTo`). Teraz jest jednym stanem

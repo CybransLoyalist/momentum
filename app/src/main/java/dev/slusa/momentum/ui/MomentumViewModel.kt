@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.slusa.momentum.data.Bucket
 import dev.slusa.momentum.data.Habit
 import dev.slusa.momentum.data.HabitRepository
+import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.data.Settings
 import dev.slusa.momentum.data.SettingsStore
 import dev.slusa.momentum.data.Todo
@@ -32,6 +33,8 @@ data class TodoUi(
     val todo: Todo,
     val ageDays: Int = 0,
     val onTodayList: Boolean = false,
+    /** Regula powtarzania, jesli to instancja cykliczna - do etykiety na kafelku. */
+    val rule: Recurrence? = null,
 )
 
 data class HabitUi(
@@ -88,13 +91,19 @@ class MomentumViewModel(
         combine(
             todos.open(Bucket.GLOWNE),
             todos.completedLastDay(Bucket.GLOWNE),
-        ) { open, done ->
+            todos.rules(),
+        ) { open, done, rules ->
+            val byId = rules.associateBy { it.id }
             fun onToday(t: Todo) = t.plannedDate != null && !t.plannedDate.isAfter(day)
+            // Zadania cykliczne starzeja sie tak samo jak reszta - zalegly czynsz ma
+            // czerniec, bo inaczej nic nie sygnalizuje spoznienia. Nie starzeja sie
+            // wylacznie nawyki, ktore faktycznie resetuja sie co dobe.
             fun map(list: List<Todo>) = list.map {
                 TodoUi(
                     todo = it,
                     ageDays = Aging.ageDays(it.plannedDate, day),
                     onTodayList = onToday(it),
+                    rule = it.recurrenceId?.let(byId::get),
                 )
             }
 
@@ -150,10 +159,11 @@ class MomentumViewModel(
 
     /** Wszystko z terminem w przyszlosci, najblizsze na gorze. */
     val scheduledState: StateFlow<List<TodoUi>> = today.flatMapLatest { day ->
-        todos.open(Bucket.GLOWNE).map { list ->
+        combine(todos.open(Bucket.GLOWNE), todos.rules()) { list, rules ->
+            val byId = rules.associateBy { it.id }
             list.filter { it.plannedDate != null && it.plannedDate.isAfter(day) }
                 .sortedBy { it.plannedDate }
-                .map { TodoUi(it) }
+                .map { TodoUi(it, rule = it.recurrenceId?.let(byId::get)) }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -195,13 +205,21 @@ class MomentumViewModel(
 
     fun toggleToday(id: Long) = viewModelScope.launch { todos.toggleToday(id, today.value) }
 
-    fun setDone(id: Long, done: Boolean) = viewModelScope.launch { todos.setDone(id, done) }
+    fun setDone(id: Long, done: Boolean) = viewModelScope.launch {
+        todos.setDone(id, done, today = today.value)
+    }
 
     fun schedule(id: Long, date: LocalDate) = viewModelScope.launch { todos.schedule(id, date) }
 
     fun moveTo(id: Long, bucket: Bucket) = viewModelScope.launch { todos.moveTo(id, bucket) }
 
     fun delete(id: Long) = viewModelScope.launch { todos.delete(id) }
+
+    fun setRecurrence(id: Long, rule: Recurrence) = viewModelScope.launch {
+        todos.setRecurrence(id, rule, today.value)
+    }
+
+    fun clearRecurrence(id: Long) = viewModelScope.launch { todos.clearRecurrence(id) }
 
     fun clearShoppingDone() = viewModelScope.launch { todos.clearCompleted(Bucket.ZAKUPY) }
 

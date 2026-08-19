@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.slusa.momentum.ui.components.PickDateDialog
+import dev.slusa.momentum.ui.components.RecurrenceSheet
 import dev.slusa.momentum.ui.components.TodoActionsSheet
 import dev.slusa.momentum.ui.icons.MomentumIcons
 import dev.slusa.momentum.ui.habits.HabitEditorSheet
@@ -57,6 +58,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     var tab by rememberSaveable { mutableStateOf(Tab.TODO_) }
     var sheetFor by remember { mutableStateOf<TodoUi?>(null) }
     var dateFor by remember { mutableStateOf<TodoUi?>(null) }
+    var recurrenceFor by remember { mutableStateOf<TodoUi?>(null) }
     var habitFor by remember { mutableStateOf<HabitUi?>(null) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
 
@@ -172,6 +174,10 @@ fun MomentumShell(vm: MomentumViewModel) {
                 sheetFor = null
                 dateFor = item
             },
+            onRecurrence = {
+                sheetFor = null
+                recurrenceFor = item
+            },
             onMoveTo = { bucket ->
                 vm.moveTo(item.todo.id, bucket)
                 sheetFor = null
@@ -198,6 +204,22 @@ fun MomentumShell(vm: MomentumViewModel) {
             onDelete = {
                 vm.deleteHabit(item.habit.id)
                 habitFor = null
+            },
+        )
+    }
+
+    recurrenceFor?.let { item ->
+        RecurrenceSheet(
+            item = item,
+            today = todayState.day,
+            onDismiss = { recurrenceFor = null },
+            onSave = { rule ->
+                vm.setRecurrence(item.todo.id, rule)
+                recurrenceFor = null
+            },
+            onClear = {
+                vm.clearRecurrence(item.todo.id)
+                recurrenceFor = null
             },
         )
     }

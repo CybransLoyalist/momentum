@@ -1,5 +1,6 @@
 package dev.slusa.momentum.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 
@@ -209,5 +211,34 @@ fun AddBar(
                 )
             }
         }
+    }
+}
+
+/**
+ * Przelacznik jednego wyboru. Wspolny dla konfiguracji nawyku i powtarzania -
+ * te same ksztalty w dwoch arkuszach powinny byc tym samym kodem.
+ */
+@Composable
+fun Chip(
+    label: String,
+    active: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = if (active) scheme.primaryContainer else Color.Transparent,
+        border = BorderStroke(1.dp, if (active) Color.Transparent else scheme.outline),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (active) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            textAlign = TextAlign.Center,
+        )
     }
 }

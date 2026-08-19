@@ -39,6 +39,7 @@ fun TodoActionsSheet(
     onDismiss: () -> Unit,
     onToggleToday: () -> Unit,
     onPickDate: () -> Unit,
+    onRecurrence: () -> Unit,
     onMoveTo: (Bucket) -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -65,6 +66,14 @@ fun TodoActionsSheet(
                         onClick = onToggleToday,
                     )
                     SheetAction("Zaplanuj na inny dzień", onClick = onPickDate)
+                    SheetAction(
+                        label = if (item.rule == null) {
+                            "Powtarzaj cyklicznie"
+                        } else {
+                            "Powtarzanie: ${item.rule.describe()}"
+                        },
+                        onClick = onRecurrence,
+                    )
                     SheetAction("Odłóż na kiedyś") { onMoveTo(Bucket.KIEDYS) }
                     SheetAction("Przenieś do zakupów") { onMoveTo(Bucket.ZAKUPY) }
                 }

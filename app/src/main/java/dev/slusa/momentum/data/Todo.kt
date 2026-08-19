@@ -46,6 +46,13 @@ data class Todo(
     val createdAt: Instant = Instant.now(),
 
     val completedAt: Instant? = null,
+
+    /**
+     * Wypelnione, jesli to instancja zadania cyklicznego. Instancja jest zawsze jedna:
+     * zalegly czynsz przesuwa sie na kolejny dzien jak zwykly todo i normalnie czernieje,
+     * a nastepny cykl powstaje dopiero po odhaczeniu tego.
+     */
+    val recurrenceId: Long? = null,
 ) {
     val isDone: Boolean get() = completedAt != null
 }

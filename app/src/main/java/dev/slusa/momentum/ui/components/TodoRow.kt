@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -81,20 +82,33 @@ fun TodoRow(
 
             Spacer(Modifier.width(12.dp))
 
-            Text(
-                text = item.todo.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (item.todo.isDone) {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                textDecoration = if (item.todo.isDone) TextDecoration.LineThrough else null,
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .clickable(onClick = onClick)
                     .padding(vertical = 14.dp),
-            )
+            ) {
+                Text(
+                    text = item.todo.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (item.todo.isDone) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    textDecoration = if (item.todo.isDone) TextDecoration.LineThrough else null,
+                )
+
+                // Etykieta powtarzania idzie pod tytulem, a nie w trailing - tam siedza
+                // juz przelacznik "dzis" i data terminu, zaleznie od listy.
+                item.rule?.let { rule ->
+                    Text(
+                        text = rule.describe(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
             if (trailing != null && !item.todo.isDone) {
                 Spacer(Modifier.width(8.dp))
