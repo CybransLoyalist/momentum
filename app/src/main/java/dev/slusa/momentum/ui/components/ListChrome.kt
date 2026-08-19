@@ -34,22 +34,51 @@ import androidx.compose.ui.unit.dp
 import java.util.Locale
 
 @Composable
-fun ScreenHeader(title: String, subtitle: String) {
-    Column(
-        Modifier
+fun ScreenHeader(
+    title: String,
+    subtitle: String,
+    action: (@Composable () -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp)
+            .padding(start = 16.dp, end = 8.dp, top = 20.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        action?.invoke()
+    }
+}
+
+/** Pasek stanu na gorze listy - dzieki niemu nie da sie zapomniec o wlaczonym urlopie. */
+@Composable
+fun Banner(text: String, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = scheme.primaryContainer,
     ) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.onPrimaryContainer,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
         )
     }
 }

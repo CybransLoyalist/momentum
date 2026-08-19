@@ -29,15 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.data.Habit
-import dev.slusa.momentum.ui.components.PickDateDialog
 import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 private val DAY_LABELS = listOf("Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd")
-private val DATE_FORMAT: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("pl"))
 
 /**
  * Konfiguracja nawyku. Ekran odwiedzany raz na jakis czas, wiec moze byc gadatliwy -
@@ -47,10 +41,8 @@ private val DATE_FORMAT: DateTimeFormatter =
 @Composable
 fun HabitEditorSheet(
     habit: Habit,
-    today: LocalDate,
     onDismiss: () -> Unit,
     onSave: (Habit) -> Unit,
-    onPause: (LocalDate?) -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -59,18 +51,6 @@ fun HabitEditorSheet(
     var name by remember(habit.id) { mutableStateOf(habit.name) }
     var daily by remember(habit.id) { mutableStateOf(habit.daily) }
     var days by remember(habit.id) { mutableStateOf(habit.weekdays) }
-    var pickingPause by remember { mutableStateOf(false) }
-
-    if (pickingPause) {
-        PickDateDialog(
-            initial = habit.pausedTo ?: today.plusWeeks(1),
-            onDismiss = { pickingPause = false },
-            onPicked = {
-                onPause(it)
-                pickingPause = false
-            },
-        )
-    }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
@@ -118,21 +98,6 @@ fun HabitEditorSheet(
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(16.dp))
-
-            if (habit.pausedTo != null && !habit.pausedTo.isBefore(today)) {
-                Text(
-                    text = "Pauza do ${habit.pausedTo.format(DATE_FORMAT)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(onClick = { onPause(null) }, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
-                    Text("Zakończ pauzę")
-                }
-            } else {
-                TextButton(onClick = { pickingPause = true }, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
-                    Text("Tryb urlopowy — wstrzymaj do dnia…")
-                }
-            }
 
             Spacer(Modifier.height(8.dp))
 

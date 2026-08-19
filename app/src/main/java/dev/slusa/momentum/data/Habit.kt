@@ -21,10 +21,6 @@ data class Habit(
      */
     val weekdaysMask: Int = 0,
 
-    /** Tryb urlopowy. Dni w tym zakresie nie licza sie ani jako zrobione, ani jako pominiete. */
-    val pausedFrom: LocalDate? = null,
-    val pausedTo: LocalDate? = null,
-
     /** Nawyk zdjety z obiegu. Historia zostaje. */
     val archived: Boolean = false,
 
@@ -35,12 +31,6 @@ data class Habit(
 ) {
     fun isScheduledOn(date: LocalDate): Boolean =
         if (daily) true else weekdaysMask and (1 shl (date.dayOfWeek.value - 1)) != 0
-
-    fun isPausedOn(date: LocalDate): Boolean {
-        val from = pausedFrom ?: return false
-        val to = pausedTo ?: return false
-        return !date.isBefore(from) && !date.isAfter(to)
-    }
 
     val weekdays: Set<DayOfWeek>
         get() = DayOfWeek.entries.filter { weekdaysMask and (1 shl (it.value - 1)) != 0 }.toSet()

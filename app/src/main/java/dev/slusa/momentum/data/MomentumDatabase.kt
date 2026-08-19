@@ -9,11 +9,12 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [Todo::class, Habit::class, HabitCompletion::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = DropFirstTodayDate::class),
         AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4, spec = DropPerHabitPause::class),
     ],
 )
 @TypeConverters(Converters::class)

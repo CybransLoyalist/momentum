@@ -34,11 +34,6 @@ import dev.slusa.momentum.ui.components.MomentumBadge
 import dev.slusa.momentum.ui.components.MomentumGrid
 import dev.slusa.momentum.ui.components.ScreenHeader
 import java.time.DayOfWeek
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-private val DATE_FORMAT: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("pl"))
 
 @Composable
 fun HabitsScreen(
@@ -160,6 +155,5 @@ private fun scheduleSummary(item: HabitUi): String {
             .ifEmpty { "brak dni" }
     }
 
-    val pause = habit.pausedTo?.let { " · pauza do ${it.format(DATE_FORMAT)}" }.orEmpty()
-    return base + pause
+    return if (habit.archived) "$base · zarchiwizowany" else base
 }

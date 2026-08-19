@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.slusa.momentum.data.Bucket
 import dev.slusa.momentum.data.Habit
 import dev.slusa.momentum.data.HabitRepository
+import dev.slusa.momentum.data.Settings
+import dev.slusa.momentum.data.SettingsStore
 import dev.slusa.momentum.data.Todo
 import dev.slusa.momentum.data.TodoRepository
 import dev.slusa.momentum.domain.Aging
@@ -66,7 +68,11 @@ data class ShoppingUiState(
 class MomentumViewModel(
     private val todos: TodoRepository,
     private val habits: HabitRepository,
+    private val settingsStore: SettingsStore,
 ) : ViewModel() {
+
+    val settings: StateFlow<Settings> = settingsStore.settings
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
 
     /**
      * Data dnia jest stanem, a nie odczytem w locie: przeplywy nie obudza sie same
@@ -110,7 +116,9 @@ class MomentumViewModel(
         combine(
             habits.active(),
             habits.completionsSince(day.minusDays(400)),
-        ) { list, completions ->
+            settingsStore.settings,
+        ) { list, completions, appSettings ->
+            val vacation = appSettings.vacation
             val byHabit = completions.groupBy({ it.habitId }, { it.date })
                 .mapValues { (_, dates) -> dates.toSet() }
 
@@ -118,11 +126,11 @@ class MomentumViewModel(
                 val done = byHabit[habit.id].orEmpty()
                 HabitUi(
                     habit = habit,
-                    momentum = Momentum.compute(habit, done, day),
+                    momentum = Momentum.compute(habit, done, day, vacation),
                     doneToday = day in done,
                     scheduledToday = habit.isScheduledOn(day),
-                    pausedToday = habit.isPausedOn(day),
-                    grid = Momentum.grid(habit, done, day),
+                    pausedToday = vacation?.covers(day) == true,
+                    grid = Momentum.grid(habit, done, day, vacation),
                 )
             }
         }
@@ -209,9 +217,11 @@ class MomentumViewModel(
         habits.setDone(habitId, today.value, done)
     }
 
-    fun pauseHabit(habitId: Long, until: LocalDate?) = viewModelScope.launch {
-        habits.pauseUntil(habitId, until, today.value)
+    fun startVacation(until: LocalDate?) = viewModelScope.launch {
+        settingsStore.startVacation(today.value, until)
     }
+
+    fun endVacation() = viewModelScope.launch { settingsStore.endVacation() }
 
     fun archiveHabit(habitId: Long, archived: Boolean) = viewModelScope.launch {
         habits.setArchived(habitId, archived)
@@ -220,9 +230,12 @@ class MomentumViewModel(
     fun deleteHabit(habitId: Long) = viewModelScope.launch { habits.delete(habitId) }
 
     companion object {
-        fun factory(todos: TodoRepository, habits: HabitRepository): ViewModelProvider.Factory =
-            viewModelFactory {
-                initializer { MomentumViewModel(todos, habits) }
-            }
+        fun factory(
+            todos: TodoRepository,
+            habits: HabitRepository,
+            settings: SettingsStore,
+        ): ViewModelProvider.Factory = viewModelFactory {
+            initializer { MomentumViewModel(todos, habits, settings) }
+        }
     }
 }

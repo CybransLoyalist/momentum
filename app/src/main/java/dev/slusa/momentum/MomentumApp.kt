@@ -3,6 +3,7 @@ package dev.slusa.momentum
 import android.app.Application
 import dev.slusa.momentum.data.HabitRepository
 import dev.slusa.momentum.data.MomentumDatabase
+import dev.slusa.momentum.data.SettingsStore
 import dev.slusa.momentum.data.TodoRepository
 
 /**
@@ -16,4 +17,6 @@ class MomentumApp : Application() {
     val todos: TodoRepository by lazy { TodoRepository(db.todoDao()) }
 
     val habits: HabitRepository by lazy { HabitRepository(db.habitDao()) }
+
+    val settings: SettingsStore by lazy { SettingsStore(this) }
 }

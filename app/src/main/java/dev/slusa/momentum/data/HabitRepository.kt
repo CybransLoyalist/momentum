@@ -32,18 +32,6 @@ class HabitRepository(private val dao: HabitDao) {
         if (done) dao.markDone(HabitCompletion(habitId, date)) else dao.unmarkDone(habitId, date)
     }
 
-    /** Pauza urlopowa od dzis do wskazanego dnia wlacznie. */
-    suspend fun pauseUntil(habitId: Long, until: LocalDate?, today: LocalDate = LocalDate.now()) {
-        val habit = dao.byId(habitId) ?: return
-        dao.update(
-            if (until == null) {
-                habit.copy(pausedFrom = null, pausedTo = null)
-            } else {
-                habit.copy(pausedFrom = today, pausedTo = until)
-            }
-        )
-    }
-
     suspend fun setArchived(habitId: Long, archived: Boolean) {
         val habit = dao.byId(habitId) ?: return
         dao.update(habit.copy(archived = archived))

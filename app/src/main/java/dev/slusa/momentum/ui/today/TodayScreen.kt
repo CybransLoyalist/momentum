@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,6 +26,7 @@ import dev.slusa.momentum.ui.HabitUi
 import dev.slusa.momentum.ui.TodayUiState
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.components.AddBar
+import dev.slusa.momentum.ui.components.Banner
 import dev.slusa.momentum.ui.components.CollapsibleHeader
 import dev.slusa.momentum.ui.components.EmptyState
 import dev.slusa.momentum.ui.components.HabitRow
@@ -45,6 +50,8 @@ fun TodayScreen(
     onItemClick: (TodoUi) -> Unit,
     onToggleHabit: (Long, Boolean) -> Unit,
     onHabitClick: (HabitUi) -> Unit,
+    vacationActive: Boolean,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
@@ -76,6 +83,15 @@ fun TodayScreen(
                         }
                     )
                 },
+                action = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Ustawienia",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
             )
         },
         bottomBar = {
@@ -97,6 +113,12 @@ fun TodayScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            if (vacationActive) {
+                item(key = "urlop") {
+                    Banner("Tryb urlopowy — nawyki wstrzymane", onOpenSettings)
+                }
+            }
+
             section("Z terminem na dziś", state.withDate, onToggleDone, onToggleToday, onItemClick)
             section("Na dziś", state.markedToday, onToggleDone, onToggleToday, onItemClick)
 

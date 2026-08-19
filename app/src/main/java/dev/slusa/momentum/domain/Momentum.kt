@@ -1,6 +1,7 @@
 package dev.slusa.momentum.domain
 
 import dev.slusa.momentum.data.Habit
+import dev.slusa.momentum.data.Vacation
 import java.time.LocalDate
 
 /** Stan pojedynczego dnia w siatce tygodni. */
@@ -21,12 +22,17 @@ object Momentum {
     /** Dalej wstecz momentum i tak jest wysycone, wiec nie ma po co liczyc. */
     private const val HORIZON_DAYS = 400L
 
-    fun compute(habit: Habit, completions: Set<LocalDate>, today: LocalDate): Int {
+    fun compute(
+        habit: Habit,
+        completions: Set<LocalDate>,
+        today: LocalDate,
+        vacation: Vacation? = null,
+    ): Int {
         var value = 0
         var day = maxOf(habit.startDate, today.minusDays(HORIZON_DAYS))
 
         while (!day.isAfter(today)) {
-            value = step(habit, completions, value, day, today)
+            value = step(habit, completions, value, day, today, vacation)
             day = day.plusDays(1)
         }
         return value
@@ -38,8 +44,9 @@ object Momentum {
         current: Int,
         day: LocalDate,
         today: LocalDate,
+        vacation: Vacation?,
     ): Int {
-        if (habit.isPausedOn(day)) return current
+        if (vacation?.covers(day) == true) return current
 
         val done = day in completions
         val scheduled = habit.isScheduledOn(day)
@@ -62,6 +69,7 @@ object Momentum {
         habit: Habit,
         completions: Set<LocalDate>,
         today: LocalDate,
+        vacation: Vacation? = null,
         weeks: Int = 8,
     ): List<Pair<LocalDate, DayState>> {
         val start = today
@@ -70,7 +78,7 @@ object Momentum {
 
         return (0 until weeks * 7).map { offset ->
             val day = start.plusDays(offset.toLong())
-            day to stateOf(habit, completions, day, today)
+            day to stateOf(habit, completions, day, today, vacation)
         }
     }
 
@@ -79,12 +87,13 @@ object Momentum {
         completions: Set<LocalDate>,
         day: LocalDate,
         today: LocalDate,
+        vacation: Vacation?,
     ): DayState = when {
         day.isAfter(today) -> DayState.PRZYSZLOSC
         day.isBefore(habit.startDate) -> DayState.PRZED_STARTEM
         // Pauza przed wykonaniem, tak samo jak w liczeniu momentum - dzien urlopowy
         // nie liczy sie w zadna strone, nawet jesli cos w nim odhaczylas.
-        habit.isPausedOn(day) -> DayState.PAUZA
+        vacation?.covers(day) == true -> DayState.PAUZA
         day in completions -> DayState.ZROBIONE
         !habit.isScheduledOn(day) -> DayState.WOLNE
         day == today -> DayState.DZISIAJ

@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MomentumTheme {
                 val vm: MomentumViewModel =
-                    viewModel(factory = MomentumViewModel.factory(app.todos, app.habits))
+                    viewModel(factory = MomentumViewModel.factory(app.todos, app.habits, app.settings))
                 MomentumShell(vm)
             }
         }

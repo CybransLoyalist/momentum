@@ -512,7 +512,7 @@ footer{
         <tr><td>name</td><td>String</td><td>Nazwa nawyku.</td></tr>
         <tr><td>schedule</td><td>enum + Set</td><td><code>CODZIENNIE</code> albo <code>DNI_TYGODNIA</code> ze zbiorem dni.</td></tr>
         <tr><td>momentum</td><td>Int 0–10</td><td>Stan bieżący. Trzymany wprost dla szybkości, ale zawsze przeliczalny z historii.</td></tr>
-        <tr><td>pausedFrom<br>pausedTo</td><td>LocalDate?</td><td>Tryb urlopowy. Dni w tym zakresie nie liczą się ani jako wykonane, ani jako pominięte.</td></tr>
+        <tr><td>startDate</td><td>LocalDate</td><td>Dzień założenia nawyku. Wcześniejsze dni nie są pominięciami — nawyk wtedy nie istniał.</td></tr>
         <tr><td>archived</td><td>Boolean</td><td>Nawyk zdjęty z obiegu, ale historia zostaje.</td></tr>
         <tr><td>sortIndex</td><td>Int</td><td>Kolejność w sekcji nawyków.</td></tr>
       </tbody>
@@ -558,7 +558,7 @@ footer{
     <li>Wykonane w dzień, w który wypada: <strong>+1</strong>. Pominięte: <strong>−1</strong>. Sufit 10, podłoga 0.</li>
     <li>Wykonane w dzień, w który <em>nie</em> wypada: <strong>+1 bonusu</strong>, ale brak kary za niezrobienie. Świadoma asymetria — nadprogramowa robota ma się opłacać.</li>
     <li>Odhaczenie wstecz przelicza momentum od nowa. Zapomniałaś kliknąć we wtorek — klikasz w środę, historia się zgadza.</li>
-    <li>Tryb urlopowy zamraża wszystko: dni w zakresie pauzy nie są ani wykonane, ani pominięte.</li>
+    <li><strong>Tryb urlopowy jest globalny</strong>, nie ustawiany osobno dla każdego nawyku — urlop to stan całej osoby. Dni urlopu nie liczą się ani jako wykonane, ani jako pominięte; momentum po prostu stoi. Data powrotu jest opcjonalna i domyślnie urlop trwa do odwołania: wybieranie jej z góry to zgadywanka, a spóźniony powrót oznaczałby karę za dni wolnego. Przed zapomnieniem o włączonym urlopie chroni pasek na liście ToDo.</li>
     <li>Konsekwencja skali: nawyk 2×/tydzień potrzebuje pięciu tygodni do dziesiątki, codzienny — dziesięciu dni. Dziesięć powtórzeń to dziesięć powtórzeń.</li>
   </ul>
 

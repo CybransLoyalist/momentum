@@ -1,6 +1,7 @@
 package dev.slusa.momentum.domain
 
 import dev.slusa.momentum.data.Habit
+import dev.slusa.momentum.data.Vacation
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.DayOfWeek
@@ -85,15 +86,32 @@ class MomentumTest {
     }
 
     @Test
-    fun `pauza nie nalicza ani nagrody ani kary`() {
-        val habit = daily(start = today.minusDays(5)).copy(
-            pausedFrom = today.minusDays(4),
-            pausedTo = today.minusDays(1),
-        )
+    fun `urlop nie nalicza ani nagrody ani kary`() {
+        val habit = daily(start = today.minusDays(5))
+        val urlop = Vacation(from = today.minusDays(4), until = today.minusDays(1))
         val done = setOf(today.minusDays(5))
 
-        // Jedno trafienie przed pauza, potem cztery dni zamrozone.
-        assertEquals(1, Momentum.compute(habit, done, today))
+        // Jedno trafienie przed urlopem, potem cztery dni zamrozone.
+        assertEquals(1, Momentum.compute(habit, done, today, urlop))
+    }
+
+    @Test
+    fun `urlop bez daty konca trwa az do odwolania`() {
+        val habit = daily(start = today.minusDays(10))
+        val urlop = Vacation(from = today.minusDays(6), until = null)
+        val done = (7..10).map { today.minusDays(it.toLong()) }.toSet()
+
+        // Cztery trafienia przed urlopem, potem nic sie nie zmienia mimo braku odhaczen.
+        assertEquals(4, Momentum.compute(habit, done, today, urlop))
+    }
+
+    @Test
+    fun `urlop bije odhaczenie - dzien urlopowy nie liczy sie w zadna strone`() {
+        val habit = daily(start = today.minusDays(3))
+        val urlop = Vacation(from = today.minusDays(3), until = today)
+        val done = (0..3).map { today.minusDays(it.toLong()) }.toSet()
+
+        assertEquals(0, Momentum.compute(habit, done, today, urlop))
     }
 
     @Test
