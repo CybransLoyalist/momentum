@@ -1,0 +1,52 @@
+package dev.slusa.momentum.data
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.time.Instant
+import java.time.LocalDate
+
+/** Na ktorej liscie rzecz mieszka. Jedna tabela, trzy ekrany. */
+enum class Bucket { GLOWNE, KIEDYS, ZAKUPY }
+
+/**
+ * Jedna encja obsluguje "na dzisiaj", "ogolne", "zaplanowane", "kiedys" i zakupy.
+ * Rozroznia je [bucket] i [plannedDate] - patrz docs/spec.html.
+ */
+@Entity(tableName = "todos")
+data class Todo(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+
+    val title: String,
+
+    val bucket: Bucket = Bucket.GLOWNE,
+
+    /**
+     * null = rzecz ogolna, dzis lub wczesniej = na liscie na dzisiaj,
+     * data przyszla = zaplanowane.
+     *
+     * Rollover nie wymaga zadnego zadania w tle: niedokonczone zadanie ma date
+     * wczorajsza, a warunek "plannedDate <= dzis" nadal je lapie.
+     */
+    val plannedDate: LocalDate? = null,
+
+    /**
+     * Dzien, w ktorym rzecz pierwszy raz trafila na liste na dzisiaj. Sluzy
+     * wylacznie do liczenia wieku i koloru paska - nie zmienia sie przy rolloverze.
+     */
+    val firstTodayDate: LocalDate? = null,
+
+    /**
+     * Czy rzecz przyszla z terminu ustawionego z wyprzedzeniem, czy zostala
+     * recznie oznaczona "na dzisiaj". Rozdziela dwie sekcje na ekranie Dzisiaj.
+     */
+    val fromSchedule: Boolean = false,
+
+    val sortIndex: Int = 0,
+
+    val createdAt: Instant = Instant.now(),
+
+    val completedAt: Instant? = null,
+) {
+    val isDone: Boolean get() = completedAt != null
+}

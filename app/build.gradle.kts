@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 // Klucz podpisujacy jest opcjonalny: lokalnie i w CI wczytujemy go z keystore.properties,
@@ -60,16 +61,28 @@ android {
     }
 }
 
+// Schematy bazy ida do repo - dzieki temu przy kazdej zmianie modelu widac w diffie,
+// co dokladnie sie stalo, i da sie napisac sensowna migracje zamiast kasowac dane.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
 
     debugImplementation(libs.compose.ui.tooling)
 }
