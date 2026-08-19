@@ -85,4 +85,6 @@ dependencies {
     implementation(libs.compose.material.icons.core)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    testImplementation(libs.junit)
 }

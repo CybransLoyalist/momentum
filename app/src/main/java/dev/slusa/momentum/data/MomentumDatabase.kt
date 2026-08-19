@@ -8,17 +8,20 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [Todo::class],
-    version = 2,
+    entities = [Todo::class, Habit::class, HabitCompletion::class],
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = DropFirstTodayDate::class),
+        AutoMigration(from = 2, to = 3),
     ],
 )
 @TypeConverters(Converters::class)
 abstract class MomentumDatabase : RoomDatabase() {
 
     abstract fun todoDao(): TodoDao
+
+    abstract fun habitDao(): HabitDao
 
     companion object {
         @Volatile

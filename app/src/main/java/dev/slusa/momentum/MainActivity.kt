@@ -14,11 +14,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val repository = (application as MomentumApp).repository
+        val app = application as MomentumApp
 
         setContent {
             MomentumTheme {
-                val vm: MomentumViewModel = viewModel(factory = MomentumViewModel.factory(repository))
+                val vm: MomentumViewModel =
+                    viewModel(factory = MomentumViewModel.factory(app.todos, app.habits))
                 MomentumShell(vm)
             }
         }

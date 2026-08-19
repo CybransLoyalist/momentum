@@ -18,11 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.BuildConfig
+import dev.slusa.momentum.ui.HabitUi
 import dev.slusa.momentum.ui.TodayUiState
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.components.AddBar
 import dev.slusa.momentum.ui.components.CollapsibleHeader
 import dev.slusa.momentum.ui.components.EmptyState
+import dev.slusa.momentum.ui.components.HabitRow
 import dev.slusa.momentum.ui.components.ScreenHeader
 import dev.slusa.momentum.ui.components.SectionHeader
 import dev.slusa.momentum.ui.components.TodayChip
@@ -36,10 +38,13 @@ private val DATE_FORMAT: DateTimeFormatter =
 @Composable
 fun TodayScreen(
     state: TodayUiState,
+    habits: List<HabitUi>,
     onAdd: (String, Boolean) -> Unit,
     onToggleDone: (Long, Boolean) -> Unit,
     onToggleToday: (Long) -> Unit,
     onItemClick: (TodoUi) -> Unit,
+    onToggleHabit: (Long, Boolean) -> Unit,
+    onHabitClick: (HabitUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
@@ -58,7 +63,7 @@ fun TodayScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ScreenHeader(
-                title = "Dzisiaj",
+                title = "ToDo",
                 subtitle = buildString {
                     append(state.day.format(DATE_FORMAT))
                     append(" · ")
@@ -94,6 +99,18 @@ fun TodayScreen(
         ) {
             section("Z terminem na dziś", state.withDate, onToggleDone, onToggleToday, onItemClick)
             section("Na dziś", state.markedToday, onToggleDone, onToggleToday, onItemClick)
+
+            if (habits.isNotEmpty()) {
+                item(key = "naglowek-nawyki") { SectionHeader("Nawyki", habits.size) }
+                items(habits, key = { "nawyk-${it.habit.id}" }) { item ->
+                    HabitRow(
+                        item = item,
+                        onToggleDone = { onToggleHabit(item.habit.id, !item.doneToday) },
+                        onClick = { onHabitClick(item) },
+                    )
+                }
+            }
+
             section("Ogólne", state.general, onToggleDone, onToggleToday, onItemClick)
 
             if (state.done.isNotEmpty()) {
@@ -115,7 +132,7 @@ fun TodayScreen(
                 }
             }
 
-            if (state.isEmpty) {
+            if (state.isEmpty && habits.isEmpty()) {
                 item(key = "pusto") {
                     EmptyState("Czysto.", "Dopisz coś na dole ekranu.")
                 }

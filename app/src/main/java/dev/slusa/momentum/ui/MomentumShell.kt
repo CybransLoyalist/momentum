@@ -8,10 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -30,16 +29,20 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.slusa.momentum.ui.components.PickDateDialog
 import dev.slusa.momentum.ui.components.TodoActionsSheet
+import dev.slusa.momentum.ui.icons.MomentumIcons
+import dev.slusa.momentum.ui.habits.HabitEditorSheet
+import dev.slusa.momentum.ui.habits.HabitsScreen
 import dev.slusa.momentum.ui.lists.ScheduledScreen
 import dev.slusa.momentum.ui.lists.ShoppingScreen
 import dev.slusa.momentum.ui.lists.SomedayScreen
 import dev.slusa.momentum.ui.today.TodayScreen
 
 private enum class Tab(val label: String, val icon: ImageVector) {
-    DZISIAJ("Dzisiaj", Icons.Default.Home),
-    KIEDYS("Kiedyś", Icons.Default.Star),
+    TODO_("ToDo", Icons.AutoMirrored.Filled.List),
+    KIEDYS("Kiedyś", MomentumIcons.Hourglass),
     ZAPLANOWANE("Plan", Icons.Default.DateRange),
     ZAKUPY("Zakupy", Icons.Default.ShoppingCart),
+    NAWYKI("Nawyki", MomentumIcons.Flame),
 }
 
 /**
@@ -50,9 +53,10 @@ private enum class Tab(val label: String, val icon: ImageVector) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MomentumShell(vm: MomentumViewModel) {
-    var tab by rememberSaveable { mutableStateOf(Tab.DZISIAJ) }
+    var tab by rememberSaveable { mutableStateOf(Tab.TODO_) }
     var sheetFor by remember { mutableStateOf<TodoUi?>(null) }
     var dateFor by remember { mutableStateOf<TodoUi?>(null) }
+    var habitFor by remember { mutableStateOf<HabitUi?>(null) }
 
     // Zmiana doby nie budzi sama przeplywow, wiec lapiemy ja przy powrocie do apki.
     LifecycleResumeEffect(Unit) {
@@ -61,12 +65,14 @@ fun MomentumShell(vm: MomentumViewModel) {
     }
 
     // Systemowy powrot wraca na liste glowna, zamiast zamykac aplikacje.
-    BackHandler(enabled = tab != Tab.DZISIAJ) { tab = Tab.DZISIAJ }
+    BackHandler(enabled = tab != Tab.TODO_) { tab = Tab.TODO_ }
 
     val todayState by vm.todayState.collectAsStateWithLifecycle()
     val somedayItems by vm.somedayState.collectAsStateWithLifecycle()
     val scheduledItems by vm.scheduledState.collectAsStateWithLifecycle()
     val shoppingState by vm.shoppingState.collectAsStateWithLifecycle()
+    val todayHabits by vm.todayHabits.collectAsStateWithLifecycle()
+    val allHabits by vm.habitsState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -93,12 +99,15 @@ fun MomentumShell(vm: MomentumViewModel) {
                 .padding(inner)
         ) {
             when (tab) {
-                Tab.DZISIAJ -> TodayScreen(
+                Tab.TODO_ -> TodayScreen(
                     state = todayState,
+                    habits = todayHabits,
                     onAdd = { title, forToday -> vm.add(title, forToday = forToday) },
                     onToggleDone = vm::setDone,
                     onToggleToday = vm::toggleToday,
                     onItemClick = { sheetFor = it },
+                    onToggleHabit = vm::setHabitDone,
+                    onHabitClick = { habitFor = it },
                 )
 
                 Tab.KIEDYS -> SomedayScreen(
@@ -124,6 +133,12 @@ fun MomentumShell(vm: MomentumViewModel) {
                     onClearDone = vm::clearShoppingDone,
                     onItemClick = { sheetFor = it },
                 )
+
+                Tab.NAWYKI -> HabitsScreen(
+                    items = allHabits,
+                    onAdd = { vm.addHabit(it, daily = true, days = emptySet()) },
+                    onItemClick = { habitFor = it },
+                )
             }
         }
     }
@@ -147,6 +162,30 @@ fun MomentumShell(vm: MomentumViewModel) {
             onDelete = {
                 vm.delete(item.todo.id)
                 sheetFor = null
+            },
+        )
+    }
+
+    habitFor?.let { item ->
+        HabitEditorSheet(
+            habit = item.habit,
+            today = todayState.day,
+            onDismiss = { habitFor = null },
+            onSave = {
+                vm.saveHabit(it)
+                habitFor = null
+            },
+            onPause = { until ->
+                vm.pauseHabit(item.habit.id, until)
+                habitFor = null
+            },
+            onArchive = {
+                vm.archiveHabit(item.habit.id, !item.habit.archived)
+                habitFor = null
+            },
+            onDelete = {
+                vm.deleteHabit(item.habit.id)
+                habitFor = null
             },
         )
     }
