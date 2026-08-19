@@ -27,14 +27,13 @@ data class Todo(
      *
      * Rollover nie wymaga zadnego zadania w tle: niedokonczone zadanie ma date
      * wczorajsza, a warunek "plannedDate <= dzis" nadal je lapie.
+     *
+     * To samo pole jest punktem odniesienia dla wieku i koloru paska. Nie trzeba
+     * do tego osobnej daty: data zostaje niezmieniona przy rolloverze, a kazde
+     * swiadome dzialanie uzytkowniczki - zdjecie z dzisiaj, przelozenie terminu -
+     * ma wiek zresetowac, co dzieje sie samo przez nadpisanie tego pola.
      */
     val plannedDate: LocalDate? = null,
-
-    /**
-     * Dzien, w ktorym rzecz pierwszy raz trafila na liste na dzisiaj. Sluzy
-     * wylacznie do liczenia wieku i koloru paska - nie zmienia sie przy rolloverze.
-     */
-    val firstTodayDate: LocalDate? = null,
 
     /**
      * Czy rzecz przyszla z terminu ustawionego z wyprzedzeniem, czy zostala

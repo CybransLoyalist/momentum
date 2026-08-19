@@ -1,6 +1,7 @@
-package dev.slusa.momentum.ui.today
+package dev.slusa.momentum.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,22 +32,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.domain.Aging
+import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.theme.LocalAgeRamp
 
 /**
- * Kafelek zadania. Pasek starzenia jest waski i przy lewej krawedzi - kolor ma
- * byc sygnalem, ktory da sie zignorowac katem oka, a nie krzykiem na pol ekranu.
+ * Kafelek zadania, wspolny dla wszystkich list. Pasek starzenia jest waski i przy
+ * lewej krawedzi - kolor ma byc sygnalem, ktory da sie zignorowac katem oka,
+ * a nie krzykiem na pol ekranu.
  */
 @Composable
 fun TodoRow(
     item: TodoUi,
     onToggleDone: () -> Unit,
-    onToggleToday: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val ramp = LocalAgeRamp.current
     val stripe by animateColorAsState(
-        targetValue = if (item.onTodayList) Aging.color(item.ageDays, ramp) else Color.Transparent,
+        targetValue = if (item.onTodayList && !item.todo.isDone) {
+            Aging.color(item.ageDays, ramp)
+        } else {
+            Color.Transparent
+        },
         label = "pasek starzenia",
     )
 
@@ -54,7 +62,7 @@ fun TodoRow(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
@@ -84,12 +92,13 @@ fun TodoRow(
                 textDecoration = if (item.todo.isDone) TextDecoration.LineThrough else null,
                 modifier = Modifier
                     .weight(1f)
+                    .clickable(onClick = onClick)
                     .padding(vertical = 14.dp),
             )
 
-            if (!item.todo.isDone) {
+            if (trailing != null && !item.todo.isDone) {
                 Spacer(Modifier.width(8.dp))
-                TodayChip(active = item.onTodayList, onClick = onToggleToday)
+                trailing()
             }
 
             Spacer(Modifier.width(12.dp))
@@ -124,14 +133,15 @@ private fun CheckCircle(done: Boolean, onClick: () -> Unit) {
     }
 }
 
+/** Maly przelacznik "na dzisiaj" po prawej stronie kafelka. */
 @Composable
-private fun TodayChip(active: Boolean, onClick: () -> Unit) {
+fun TodayChip(active: Boolean, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = if (active) scheme.primaryContainer else Color.Transparent,
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             width = 1.dp,
             color = if (active) Color.Transparent else scheme.outline,
         ),
@@ -143,4 +153,14 @@ private fun TodayChip(active: Boolean, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
         )
     }
+}
+
+/** Etykieta terminu, uzywana na liscie zaplanowanych. */
+@Composable
+fun DateChip(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

@@ -19,8 +19,8 @@ class TodoRepository(private val dao: TodoDao) {
     suspend fun add(
         title: String,
         bucket: Bucket = Bucket.GLOWNE,
-        forToday: Boolean,
-        today: LocalDate = LocalDate.now(),
+        plannedDate: LocalDate? = null,
+        fromSchedule: Boolean = false,
     ): Long {
         val trimmed = title.trim()
         if (trimmed.isEmpty()) return -1
@@ -28,8 +28,8 @@ class TodoRepository(private val dao: TodoDao) {
             Todo(
                 title = trimmed,
                 bucket = bucket,
-                plannedDate = if (forToday) today else null,
-                firstTodayDate = if (forToday) today else null,
+                plannedDate = plannedDate,
+                fromSchedule = fromSchedule,
                 sortIndex = dao.nextTopSortIndex(bucket),
             )
         )
@@ -44,9 +44,33 @@ class TodoRepository(private val dao: TodoDao) {
         val onTodayList = todo.plannedDate != null && !todo.plannedDate.isAfter(today)
         dao.update(
             if (onTodayList) {
-                todo.copy(plannedDate = null, firstTodayDate = null, fromSchedule = false)
+                todo.copy(plannedDate = null, fromSchedule = false)
             } else {
-                todo.copy(plannedDate = today, firstTodayDate = today, fromSchedule = false)
+                todo.copy(plannedDate = today, fromSchedule = false)
+            }
+        )
+    }
+
+    /**
+     * Ustawia termin. Data w przyszlosci znika z listy glownej i wraca sama tego dnia;
+     * [fromSchedule] rozdziela potem sekcje "z terminem" od recznie oznaczonych.
+     */
+    suspend fun schedule(id: Long, date: LocalDate) {
+        val todo = dao.byId(id) ?: return
+        dao.update(todo.copy(plannedDate = date, fromSchedule = true, bucket = Bucket.GLOWNE))
+    }
+
+    /**
+     * Przenosi miedzy listami. Wyjscie z listy glownej gubi termin - rzecz odlozona
+     * "na kiedys" z terminem na wczoraj bylaby sprzecznoscia sama w sobie.
+     */
+    suspend fun moveTo(id: Long, bucket: Bucket) {
+        val todo = dao.byId(id) ?: return
+        dao.update(
+            if (bucket == Bucket.GLOWNE) {
+                todo.copy(bucket = bucket)
+            } else {
+                todo.copy(bucket = bucket, plannedDate = null, fromSchedule = false)
             }
         )
     }
@@ -56,7 +80,12 @@ class TodoRepository(private val dao: TodoDao) {
         dao.update(todo.copy(completedAt = if (done) now else null))
     }
 
-    suspend fun delete(todo: Todo) = dao.delete(todo)
+    suspend fun delete(id: Long) {
+        val todo = dao.byId(id) ?: return
+        dao.delete(todo)
+    }
+
+    suspend fun clearCompleted(bucket: Bucket) = dao.clearCompleted(bucket)
 
     /** Sprzatanie odhaczonych starszych niz doba. Wolane przy starcie aplikacji. */
     suspend fun purgeOldCompleted(now: Instant = Instant.now()): Int =

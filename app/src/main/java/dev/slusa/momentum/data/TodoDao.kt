@@ -53,4 +53,8 @@ interface TodoDao {
      */
     @Query("DELETE FROM todos WHERE completedAt IS NOT NULL AND completedAt < :cutoff")
     suspend fun purgeCompletedBefore(cutoff: Instant): Int
+
+    /** Przycisk "wyczysc odhaczone" na liscie zakupow. */
+    @Query("DELETE FROM todos WHERE bucket = :bucket AND completedAt IS NOT NULL")
+    suspend fun clearCompleted(bucket: Bucket): Int
 }

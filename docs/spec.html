@@ -467,8 +467,7 @@ footer{
         <tr><td>id</td><td>Long</td><td>Klucz.</td></tr>
         <tr><td>title</td><td>String</td><td>Jedyna treść zadania. Bez notatek, bez podzadań.</td></tr>
         <tr><td>bucket</td><td>enum</td><td><code>GŁÓWNE</code> · <code>KIEDYŚ</code> · <code>ZAKUPY</code>. Decyduje, na którym ekranie rzecz mieszka.</td></tr>
-        <tr><td>plannedDate</td><td>LocalDate?</td><td><code>null</code> = ogólne, dziś = na dzisiaj, data przyszła = zaplanowane. Toggle „na dzisiaj” tylko ustawia i czyści to pole.</td></tr>
-        <tr><td>firstTodayDate</td><td>LocalDate?</td><td>Dzień, w którym rzecz pierwszy raz trafiła na listę „na dzisiaj”. Wyłącznie do liczenia wieku i koloru — nie zmienia się przy rolloverze.</td></tr>
+        <tr><td>plannedDate</td><td>LocalDate?</td><td><code>null</code> = ogólne, dziś lub wcześniej = na dzisiaj, data przyszła = zaplanowane. Toggle „na dzisiaj” tylko ustawia i czyści to pole. To samo pole jest punktem odniesienia dla wieku — patrz sekcja 02.</td></tr>
         <tr><td>sortIndex</td><td>Int</td><td>Ręczna kolejność w obrębie sekcji.</td></tr>
         <tr><td>completedAt</td><td>Instant?</td><td>Odhaczone. <code>null</code> = otwarte.</td></tr>
         <tr><td>recurrenceId</td><td>Long?</td><td>Wypełnione, jeśli to instancja zadania cyklicznego.</td></tr>
@@ -538,7 +537,7 @@ footer{
   </div>
 
   <ul>
-    <li>Wiek liczy się od <code>firstTodayDate</code>, czyli od pierwszego dnia na liście — nie od daty utworzenia. Zadanie zaplanowane na 5 listopada jest 5 listopada zielone, a nie „ma trzy tygodnie”.</li>
+    <li>Wiek liczy się od <code>plannedDate</code>, czyli od dnia, w którym rzecz trafiła na listę — nie od daty utworzenia. Zadanie zaplanowane na 5 listopada jest 5 listopada zielone, a nie „ma trzy tygodnie”. Osobne pole na to okazało się zbędne: rollover zostawia datę nietkniętą, a każde świadome działanie — zdjęcie z dzisiaj, przełożenie terminu — ma wiek zresetować, co dzieje się samo przez nadpisanie tego pola.</li>
     <li>Próg pełnej czerni domyślnie <strong>7 dni</strong>, zmienny w ustawieniach. Kolory pomiędzy interpolowane płynnie.</li>
     <li>Nawyki i zadania cykliczne <strong>nie starzeją się</strong> — one z definicji wracają jutro.</li>
     <li>Odznaczenie „na dzisiaj” i zaznaczenie ponownie kasuje wiek. To furtka do oszukiwania samej siebie, ale to twoja apka.</li>
