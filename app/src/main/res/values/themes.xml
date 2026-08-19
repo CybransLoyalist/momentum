@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Motyw uzywany tylko do startu okna - wlasciwy wyglad robi Compose.
+      DeviceDefault.DayNight, zeby okno przed pierwsza klatka mialo juz
+      wlasciwy kolor tla i nie mrugalo bialym.
+    -->
+    <style name="Theme.Momentum" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

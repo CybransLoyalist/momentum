@@ -1,0 +1,16 @@
+*.iml
+.gradle/
+.idea/
+build/
+local.properties
+.kotlin/
+.cxx/
+
+# Klucz podpisujacy i haslo NIGDY nie trafiaja do repo.
+# Kopia zapasowa klucza lezy poza projektem - patrz README.
+*.jks
+*.keystore
+keystore.properties
+
+# log z lokalnych buildow
+build.log

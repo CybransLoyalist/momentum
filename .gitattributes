@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+# gradlew musi zostac z LF, inaczej runner Linuksa go nie uruchomi.
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+
+*.jar binary
+*.jks binary
+*.png binary

@@ -1,0 +1,679 @@
+<title>Momentum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --bg:#F5F8F6;
+  --surface:#FFFFFF;
+  --surface-2:#E9EFEB;
+  --ink:#141B17;
+  --ink-2:#3F4C45;
+  --ink-3:#6C7A73;
+  --rule:#D5DED8;
+  --rule-strong:#B6C3BB;
+  --accent:#1D5C45;
+  --accent-soft:#E2EFE8;
+  --age-0:#3E9B72;
+  --age-1:#7FA23F;
+  --age-2:#C9A227;
+  --age-3:#CE6B3A;
+  --age-4:#9E3030;
+  --age-5:#191517;
+  --swatch-ring:rgba(20,27,23,.18);
+
+  --sans:"Archivo","Segoe UI",system-ui,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,monospace;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1412;
+    --surface:#161D19;
+    --surface-2:#1D2620;
+    --ink:#E6EDE8;
+    --ink-2:#AEBCB4;
+    --ink-3:#7B8A82;
+    --rule:#28322C;
+    --rule-strong:#3A4740;
+    --accent:#6FCFA0;
+    --accent-soft:#172A21;
+    --age-0:#4FB585;
+    --age-1:#93B84C;
+    --age-2:#D6B23A;
+    --age-3:#DC7A48;
+    --age-4:#B94141;
+    --age-5:#0B0A0B;
+    --swatch-ring:rgba(230,237,232,.22);
+  }
+}
+
+:root[data-theme="dark"]{
+  --bg:#0F1412;
+  --surface:#161D19;
+  --surface-2:#1D2620;
+  --ink:#E6EDE8;
+  --ink-2:#AEBCB4;
+  --ink-3:#7B8A82;
+  --rule:#28322C;
+  --rule-strong:#3A4740;
+  --accent:#6FCFA0;
+  --accent-soft:#172A21;
+  --age-0:#4FB585;
+  --age-1:#93B84C;
+  --age-2:#D6B23A;
+  --age-3:#DC7A48;
+  --age-4:#B94141;
+  --age-5:#0B0A0B;
+  --swatch-ring:rgba(230,237,232,.22);
+}
+
+*{box-sizing:border-box}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.62;
+  margin:0;
+  padding:0 20px 96px;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:660px;margin:0 auto}
+.wide{max-width:920px;margin:0 auto}
+
+/* ---------- header ---------- */
+
+header.masthead{
+  padding:72px 0 0;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+.eyebrow{
+  font-family:var(--sans);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  margin:0;
+}
+h1{
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:clamp(44px,9vw,72px);
+  line-height:.98;
+  letter-spacing:-.03em;
+  margin:0;
+  text-wrap:balance;
+}
+.dek{
+  font-size:20px;
+  line-height:1.5;
+  color:var(--ink-2);
+  margin:0;
+  max-width:36em;
+}
+
+/* the aging scale, used as the page's signature rule */
+.scale{
+  display:flex;
+  gap:3px;
+  margin-top:8px;
+}
+.scale div{
+  height:10px;
+  flex:1;
+  border-radius:2px;
+}
+
+.facts{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:20px 28px;
+  padding:22px 0 0;
+  border-top:1px solid var(--rule);
+  margin-top:8px;
+}
+.fact dt{
+  font-family:var(--sans);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  margin:0 0 3px;
+}
+.fact dd{
+  margin:0;
+  font-family:var(--sans);
+  font-size:15px;
+  font-weight:500;
+  color:var(--ink);
+}
+
+/* ---------- sections ---------- */
+
+section{padding-top:72px}
+
+h2{
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:30px;
+  letter-spacing:-.02em;
+  line-height:1.15;
+  margin:0 0 8px;
+  text-wrap:balance;
+}
+h2 .num{
+  color:var(--accent);
+  font-family:var(--mono);
+  font-size:16px;
+  font-weight:500;
+  letter-spacing:0;
+  margin-right:12px;
+  vertical-align:5px;
+}
+h3{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:18px;
+  letter-spacing:-.005em;
+  margin:36px 0 6px;
+}
+.lede{
+  color:var(--ink-2);
+  margin:0 0 4px;
+}
+p{margin:16px 0}
+ul,ol{margin:16px 0;padding-left:22px}
+li{margin:7px 0}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+em{font-style:italic}
+
+code{
+  font-family:var(--mono);
+  font-size:.84em;
+  background:var(--surface-2);
+  border-radius:4px;
+  padding:1px 5px;
+  color:var(--ink);
+}
+
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:3px;
+}
+
+/* ---------- tables ---------- */
+
+.tablebox{
+  overflow-x:auto;
+  border:1px solid var(--rule);
+  border-radius:8px;
+  background:var(--surface);
+  margin:18px 0 8px;
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:520px;
+  font-family:var(--sans);
+  font-size:14px;
+}
+th{
+  text-align:left;
+  font-weight:600;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  padding:12px 16px;
+  border-bottom:1px solid var(--rule);
+  white-space:nowrap;
+}
+td{
+  padding:11px 16px;
+  border-bottom:1px solid var(--rule);
+  vertical-align:top;
+  color:var(--ink-2);
+}
+tr:last-child td{border-bottom:0}
+td:first-child{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--ink);
+  white-space:nowrap;
+}
+td.plain:first-child{font-family:var(--sans);white-space:normal}
+.caption{
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--ink-3);
+  margin:0 0 30px;
+}
+
+/* ---------- callout ---------- */
+
+.note{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0;
+  padding:16px 20px;
+  margin:24px 0;
+}
+.note p{margin:0}
+.note p + p{margin-top:10px}
+.note .tag{
+  display:block;
+  font-family:var(--sans);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:6px;
+}
+
+/* ---------- aging demo ---------- */
+
+.aging{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
+  gap:10px;
+  margin:22px 0 10px;
+}
+.chip{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-radius:7px;
+  padding:12px 12px 12px 15px;
+  position:relative;
+  overflow:hidden;
+}
+.chip::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:var(--c);
+}
+.chip .d{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-3);
+  display:block;
+}
+.chip .l{
+  font-family:var(--sans);
+  font-size:13px;
+  font-weight:500;
+  color:var(--ink);
+}
+
+/* ---------- momentum bar ---------- */
+
+.mom{
+  display:flex;
+  gap:4px;
+  align-items:flex-end;
+  margin:20px 0 6px;
+  height:44px;
+}
+.mom span{
+  flex:1;
+  border-radius:2px;
+  background:var(--surface-2);
+  border:1px solid var(--rule);
+}
+.mom span.on{
+  background:var(--age-0);
+  border-color:transparent;
+}
+
+/* ---------- screens ---------- */
+
+.screens{
+  display:grid;
+  gap:1px;
+  background:var(--rule);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+  margin:22px 0;
+}
+.screen{
+  background:var(--surface);
+  padding:18px 20px;
+}
+.screen h4{
+  font-family:var(--sans);
+  font-size:16px;
+  font-weight:600;
+  margin:0 0 4px;
+}
+.screen p{
+  margin:0;
+  font-size:15.5px;
+  color:var(--ink-2);
+}
+.screen .badge{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-3);
+  border:1px solid var(--rule-strong);
+  border-radius:20px;
+  padding:1px 8px;
+  margin-left:8px;
+  vertical-align:2px;
+  white-space:nowrap;
+}
+
+/* ---------- phases ---------- */
+
+.phases{
+  counter-reset:ph;
+  list-style:none;
+  padding:0;
+  margin:22px 0;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  background:var(--rule);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+}
+.phases li{
+  counter-increment:ph;
+  background:var(--surface);
+  padding:16px 20px 16px 58px;
+  position:relative;
+  margin:0;
+}
+.phases li::before{
+  content:counter(ph);
+  position:absolute;
+  left:20px;top:16px;
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--accent);
+}
+.phases b{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:15.5px;
+  display:block;
+  color:var(--ink);
+}
+.phases span{
+  font-size:15.5px;
+  color:var(--ink-2);
+}
+
+footer{
+  margin-top:80px;
+  padding-top:22px;
+  border-top:1px solid var(--rule);
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--ink-3);
+}
+</style>
+
+<div class="wrap">
+<header class="masthead">
+  <p class="eyebrow">Specyfikacja · wersja 1 · sierpień 2026</p>
+  <h1>Momentum</h1>
+  <p class="dek">Aplikacja na Androida do todosów i nawyków. Jedna lista na dziś, nagroda za konsekwencję, która nie kasuje się po jednym potknięciu, i zadania, które wizualnie gniją, jeśli je ignorujesz.</p>
+  <div class="scale" aria-hidden="true">
+    <div style="background:var(--age-0)"></div>
+    <div style="background:var(--age-1)"></div>
+    <div style="background:var(--age-2)"></div>
+    <div style="background:var(--age-3)"></div>
+    <div style="background:var(--age-4)"></div>
+    <div style="background:var(--age-5)"></div>
+  </div>
+  <dl class="facts">
+    <div class="fact"><dt>Platforma</dt><dd>Android, Galaxy S23</dd></div>
+    <div class="fact"><dt>Stack</dt><dd>Kotlin · Compose · Room</dd></div>
+    <div class="fact"><dt>Dystrybucja</dt><dd>GitHub Actions → Obtainium</dd></div>
+    <div class="fact"><dt>Użytkownicy</dt><dd>Jeden</dd></div>
+  </dl>
+</header>
+
+<section>
+  <h2><span class="num">01</span>Model danych</h2>
+  <p class="lede">Cztery encje. Todosy „na dzisiaj”, „ogólne”, „zaplanowane”, „kiedyś” i zakupy to <em>nie</em> pięć list — to jedna tabela z dwoma polami.</p>
+
+  <h3>Todo</h3>
+</section>
+</div>
+
+<div class="wide">
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>Long</td><td>Klucz.</td></tr>
+        <tr><td>title</td><td>String</td><td>Jedyna treść zadania. Bez notatek, bez podzadań.</td></tr>
+        <tr><td>bucket</td><td>enum</td><td><code>GŁÓWNE</code> · <code>KIEDYŚ</code> · <code>ZAKUPY</code>. Decyduje, na którym ekranie rzecz mieszka.</td></tr>
+        <tr><td>plannedDate</td><td>LocalDate?</td><td><code>null</code> = ogólne, dziś = na dzisiaj, data przyszła = zaplanowane. Toggle „na dzisiaj” tylko ustawia i czyści to pole.</td></tr>
+        <tr><td>firstTodayDate</td><td>LocalDate?</td><td>Dzień, w którym rzecz pierwszy raz trafiła na listę „na dzisiaj”. Wyłącznie do liczenia wieku i koloru — nie zmienia się przy rolloverze.</td></tr>
+        <tr><td>sortIndex</td><td>Int</td><td>Ręczna kolejność w obrębie sekcji.</td></tr>
+        <tr><td>completedAt</td><td>Instant?</td><td>Odhaczone. <code>null</code> = otwarte.</td></tr>
+        <tr><td>recurrenceId</td><td>Long?</td><td>Wypełnione, jeśli to instancja zadania cyklicznego.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="wrap">
+<section style="padding-top:24px">
+  <h3>Recurrence — cykliczność</h3>
+  <p>Osobna tabelka, bo cykliczność ma własne reguły i nie chcę jej upychać w kolumnach todosa.</p>
+</section>
+</div>
+
+<div class="wide">
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td>mode</td><td>enum</td><td><code>KALENDARZOWA</code> — „10. każdego miesiąca”, termin nie zależy od tego, kiedy odhaczysz. <code>OD_WYKONANIA</code> — „co 3 miesiące od ostatniego razu”.</td></tr>
+        <tr><td>everyN</td><td>Int</td><td>Co ile jednostek.</td></tr>
+        <tr><td>unit</td><td>enum</td><td><code>DZIEŃ</code> · <code>TYDZIEŃ</code> · <code>MIESIĄC</code> · <code>ROK</code>.</td></tr>
+        <tr><td>anchorDay</td><td>Int?</td><td>Dzień miesiąca dla trybu kalendarzowego. Przy 31 w lutym schodzi na ostatni dzień miesiąca.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="wrap">
+<section style="padding-top:24px">
+  <h3>Habit — nawyk</h3>
+</section>
+</div>
+
+<div class="wide">
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Pole</th><th>Typ</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td>id</td><td>Long</td><td>Klucz.</td></tr>
+        <tr><td>name</td><td>String</td><td>Nazwa nawyku.</td></tr>
+        <tr><td>schedule</td><td>enum + Set</td><td><code>CODZIENNIE</code> albo <code>DNI_TYGODNIA</code> ze zbiorem dni.</td></tr>
+        <tr><td>momentum</td><td>Int 0–10</td><td>Stan bieżący. Trzymany wprost dla szybkości, ale zawsze przeliczalny z historii.</td></tr>
+        <tr><td>pausedFrom<br>pausedTo</td><td>LocalDate?</td><td>Tryb urlopowy. Dni w tym zakresie nie liczą się ani jako wykonane, ani jako pominięte.</td></tr>
+        <tr><td>archived</td><td>Boolean</td><td>Nawyk zdjęty z obiegu, ale historia zostaje.</td></tr>
+        <tr><td>sortIndex</td><td>Int</td><td>Kolejność w sekcji nawyków.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="wrap caption">HabitCompletion to prosta para <code>habitId</code> + <code>date</code>, przechowywana bezterminowo — bez niej nie da się przeliczyć momentum ani narysować siatki tygodni.</p>
+</div>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">02</span>Starzenie się zadań</h2>
+  <p class="lede">Im dłużej coś wisi na liście „na dzisiaj”, tym bardziej gnije wizualnie. Kolor niesie kolorowy pasek przy lewej krawędzi kafelka, nie całe tło — sygnał jest tak samo czytelny, a lista po tygodniu marnego humoru nie zamienia się w ścianę czerni.</p>
+
+  <div class="aging">
+    <div class="chip" style="--c:var(--age-0)"><span class="d">dzień 0</span><span class="l">świeże</span></div>
+    <div class="chip" style="--c:var(--age-1)"><span class="d">dzień 1–2</span><span class="l">wczoraj</span></div>
+    <div class="chip" style="--c:var(--age-2)"><span class="d">dzień 3</span><span class="l">zwleka</span></div>
+    <div class="chip" style="--c:var(--age-3)"><span class="d">dzień 5</span><span class="l">wstyd</span></div>
+    <div class="chip" style="--c:var(--age-4)"><span class="d">dzień 6</span><span class="l">alarm</span></div>
+    <div class="chip" style="--c:var(--age-5)"><span class="d">dzień 7+</span><span class="l">czerń</span></div>
+  </div>
+
+  <ul>
+    <li>Wiek liczy się od <code>firstTodayDate</code>, czyli od pierwszego dnia na liście — nie od daty utworzenia. Zadanie zaplanowane na 5 listopada jest 5 listopada zielone, a nie „ma trzy tygodnie”.</li>
+    <li>Próg pełnej czerni domyślnie <strong>7 dni</strong>, zmienny w ustawieniach. Kolory pomiędzy interpolowane płynnie.</li>
+    <li>Nawyki i zadania cykliczne <strong>nie starzeją się</strong> — one z definicji wracają jutro.</li>
+    <li>Odznaczenie „na dzisiaj” i zaznaczenie ponownie kasuje wiek. To furtka do oszukiwania samej siebie, ale to twoja apka.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Momentum</h2>
+  <p class="lede">Nagroda za konsekwencję, która nie kasuje się do zera po jednym opuszczonym dniu. Skala 0–10.</p>
+
+  <div class="mom" aria-hidden="true">
+    <span class="on" style="height:26%"></span><span class="on" style="height:33%"></span><span class="on" style="height:40%"></span><span class="on" style="height:47%"></span><span class="on" style="height:54%"></span><span class="on" style="height:61%"></span><span class="on" style="height:68%"></span><span></span><span></span><span></span>
+  </div>
+  <p class="caption">Siedem z dziesięciu. Trzy dni do maksa, siedem dni obojętności do zera.</p>
+
+  <ul>
+    <li><strong>Zmienia się wyłącznie w dni, w które nawyk wypada.</strong> Bez tego nawyk „wtorek i czwartek” nigdy nie dobiłby do dziesiątki, bo traciłby punkty w poniedziałki.</li>
+    <li>Wykonane w dzień, w który wypada: <strong>+1</strong>. Pominięte: <strong>−1</strong>. Sufit 10, podłoga 0.</li>
+    <li>Wykonane w dzień, w który <em>nie</em> wypada: <strong>+1 bonusu</strong>, ale brak kary za niezrobienie. Świadoma asymetria — nadprogramowa robota ma się opłacać.</li>
+    <li>Odhaczenie wstecz przelicza momentum od nowa. Zapomniałaś kliknąć we wtorek — klikasz w środę, historia się zgadza.</li>
+    <li>Tryb urlopowy zamraża wszystko: dni w zakresie pauzy nie są ani wykonane, ani pominięte.</li>
+    <li>Konsekwencja skali: nawyk 2×/tydzień potrzebuje pięciu tygodni do dziesiątki, codzienny — dziesięciu dni. Dziesięć powtórzeń to dziesięć powtórzeń.</li>
+  </ul>
+
+  <p><strong>Wizualizacja:</strong> siatka ostatnich ośmiu tygodni w stylu wykresu aktywności — poza samym licznikiem pokazuje wzorce w rodzaju „zawsze sypie mi się w weekendy”.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Ekrany</h2>
+  <p class="lede">Pięć zakładek u dołu plus ustawienia. Dzisiaj jest ekranem startowym i to w nim spędzasz 95% czasu.</p>
+
+  <div class="screens">
+    <div class="screen">
+      <h4>Dzisiaj<span class="badge">start</span></h4>
+      <p>Trzy sekcje w stałej kolejności: zadania z datą na dziś, zwykłe todosy oznaczone „na dzisiaj”, nawyki na dziś. Pod nimi lista ogólna. Ręczne przeciąganie działa <em>wewnątrz</em> sekcji — nawyk nie wskoczy nad zadanie z terminem. Na samym dole zwinięta sekcja „Zrobione”, trzymająca wykonane z ostatnich 24 godzin, żeby dało się cofnąć przypadkowe kliknięcie.</p>
+    </div>
+    <div class="screen">
+      <h4>Kiedyś</h4>
+      <p>Rzeczy, o których nie chcesz zapomnieć, ale nie chcesz, żeby się na ciebie patrzyły. Jeden gest przenosi pozycję na listę główną.</p>
+    </div>
+    <div class="screen">
+      <h4>Zaplanowane</h4>
+      <p>Wszystko z datą w przyszłości plus zadania cykliczne, pogrupowane po tygodniach. Datę zmieniasz w miejscu.</p>
+    </div>
+    <div class="screen">
+      <h4>Zakupy</h4>
+      <p>Pole tekstowe na górze, odhaczone lądują na dole wyszarzone. Przycisk „wyczyść odhaczone”. Zero dat, zero starzenia, zero ceregieli.</p>
+    </div>
+    <div class="screen">
+      <h4>Nawyki<span class="badge">konfiguracja</span></h4>
+      <p>Lista nawyków z ich momentum i siatką tygodni. Dodawanie, edycja harmonogramu, pauza urlopowa, archiwizacja. Ekran odwiedzany raz na jakiś czas, nie codziennie.</p>
+    </div>
+    <div class="screen">
+      <h4>Ustawienia</h4>
+      <p>Godziny powiadomień, próg czerni w dniach, słowa kluczowe zakupów, eksport i import kopii, logowanie do Google Tasks, kontrola uśpienia aplikacji przez Samsunga.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Reguły, które łatwo przeoczyć</h2>
+
+  <h3>Rollover o północy</h3>
+  <p>Doba kończy się o 00:00. Niedokończone „na dzisiaj” <strong>zostaje</strong> na jutrzejszej liście, z zachowanym <code>firstTodayDate</code>, więc rośnie mu wiek i ciemnieje pasek. Nic nie znika po cichu.</p>
+
+  <h3>Jedna otwarta instancja zadania cyklicznego</h3>
+  <p>Zaległy czynsz nie rozmnaża się co miesiąc na cztery kopie. Istnieje jedna instancja, przesuwa się na kolejny dzień jak zwykły todo i normalnie czernieje. Nowy cykl generuje się dopiero po odhaczeniu.</p>
+
+  <h3>Historia</h3>
+  <p>Odhaczone todosy kasujemy po 24 godzinach — nie masz potrzeby ich trzymać. Odhaczone nawyki zostają na zawsze, bo bez nich nie ma z czego liczyć momentum. To dwa różne mechanizmy, choć na ekranie wyglądają tak samo.</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span>Powiadomienia</h2>
+  <ul>
+    <li><strong>08:00</strong> — podsumowanie dnia: ile zadań, ile nawyków, co jest zaległe.</li>
+    <li><strong>16:00</strong> — kopniak: co zostało otwarte.</li>
+    <li>Godziny i włącznik osobno dla każdego, w ustawieniach.</li>
+    <li>Odhaczanie prosto z rozwiniętego powiadomienia, bez otwierania aplikacji.</li>
+  </ul>
+
+  <div class="note">
+    <span class="tag">Pułapka Samsunga</span>
+    <p>Galaxy agresywnie usypia aplikacje i to notorycznie zabija zaplanowane powiadomienia. Aplikacja musi zostać ustawiona na „Nieograniczone” w ustawieniach baterii i wyrzucona z listy uśpionych. Ekran ustawień to wykrywa i przypomina — bez tego za dwa tygodnie uznasz, że powiadomienia „nie działają”.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span>Kopia zapasowa</h2>
+  <p class="lede">Dwie warstwy, które robią różne rzeczy. Nie są alternatywami.</p>
+  <ul>
+    <li><strong>Android Auto Backup</strong> — jedna flaga w manifeście. Android sam kopiuje dane na twój Dysk Google raz na dobę i odtwarza je przy konfiguracji nowego telefonu. Niewidzialne i bezobsługowe, ale nie da się tego podejrzeć ani cofnąć do stanu sprzed tygodnia.</li>
+    <li><strong>Eksport i import JSON</strong> — plik, który widzisz i kontrolujesz. Automatycznie raz dziennie plus przycisk na żądanie. To jedyny sposób, żeby <em>zweryfikować</em>, że w ogóle masz kopię.</li>
+  </ul>
+  <p>Świadomie odpada Drive API: oznaczałoby OAuth, weryfikację aplikacji i wygasające tokeny w zamian za funkcję, którą Auto Backup daje za darmo.</p>
+</section>
+
+<section>
+  <h2><span class="num">08</span>Most głosowy</h2>
+  <p class="lede">Test na telefonie rozstrzygnął, jak Samsung rozdziela komendy — i wynik jest korzystny.</p>
+  <ul>
+    <li>„Dodaj zadanie XYZ” → <strong>Google Tasks</strong>, które ma publiczne, darmowe API. To jest rura, której potrzebujemy.</li>
+    <li>„Dodaj do listy zakupów” → <strong>Samsung Notes</strong>, bez żadnego API. Ślepy zaułek, nie warto go drążyć.</li>
+  </ul>
+  <p>Dlatego wszystko wchodzi jedną rurą, a rozdziela się po naszej stronie: <em>„dodaj zadanie: kup mleko”</em> ląduje w zakupach, bo aplikacja rozpoznaje słowo kluczowe. Domyślne słowa to <code>kup</code>, <code>kupić</code>, <code>zakupy</code>, edytowalne w ustawieniach. Nie zmieniasz nawyku mówienia, a routing nie zależy od tego, co Samsung wymyśli w kolejnej aktualizacji.</p>
+  <p>Aplikacja odpytuje Google Tasks co kilka minut, importuje nowe wpisy i <strong>kasuje je po stronie Google</strong>, żeby Lista zadań pozostała pusta i pełniła wyłącznie rolę mikrofonu. Stąd potrzeba zakresu zapisu, nie tylko odczytu.</p>
+
+  <div class="note">
+    <span class="tag">Twoja robota, jednorazowo</span>
+    <p>Projekt w Google Cloud, włączenie Tasks API, ekran zgody OAuth i identyfikator klienta typu Android. Około 40 minut klikania w przeglądarce, koszt zero, karta niepotrzebna. Muszę cię przez to przeprowadzić krok po kroku, bo wymaga zalogowania na twoje konto.</p>
+    <p>Kluczowy szczegół: po konfiguracji trzeba kliknąć <strong>„Opublikuj aplikację”</strong>. Dokumentacja Google wiąże siedmiodniowe wygasanie tokenu ze statusem „Testing” — przejście na „In Production” ten warunek usuwa, i nie wymaga do tego przechodzenia weryfikacji. Ceną jest jednorazowy ekran „ta aplikacja nie została zweryfikowana”, który klikasz raz w życiu.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span>Kolejność budowy</h2>
+  <p class="lede">Tu numeracja coś znaczy — każdy etap kończy się czymś działającym na telefonie.</p>
+  <ol class="phases">
+    <li><b>Szkielet i dystrybucja</b><span>Pusty projekt, klucz podpisujący, GitHub Actions, Obtainium. Najpierw upewniamy się, że aktualizacje dochodzą, zanim będzie co aktualizować.</span></li>
+    <li><b>Todosy</b><span>Model danych, ekran Dzisiaj, toggle „na dzisiaj”, odhaczanie, cofanie, rollover, starzenie się kolorów.</span></li>
+    <li><b>Pozostałe listy</b><span>Kiedyś, Zaplanowane, Zakupy. Tanie, bo to ten sam model z innym filtrem.</span></li>
+    <li><b>Nawyki i momentum</b><span>Konfiguracja, wpinanie w listę na dziś, licznik, siatka tygodni, tryb urlopowy.</span></li>
+    <li><b>Cykliczność</b><span>Oba tryby powtarzania i generowanie kolejnej instancji.</span></li>
+    <li><b>Powiadomienia i kopia zapasowa</b><span>WorkManager, dwa alarmy, akcje w powiadomieniu, eksport JSON, Auto Backup.</span></li>
+    <li><b>Most głosowy</b><span>Najdroższy i najbardziej zależny od zewnętrznych czynników, więc idzie na koniec. Do tego czasu aplikacja jest już w pełni używalna.</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">10</span>Świadomie odłożone</h2>
+  <p>Rzeczy rozważone i odrzucone z wersji pierwszej, żeby nie wracać do nich w dyskusji: notatki i podzadania w todosach, tagi i projekty, priorytety, załączniki, nawyki wykonywane kilka razy dziennie, statystyki poza siatką tygodni, widżet na ekranie głównym, synchronizacja przez Firestore i jakakolwiek wersja webowa.</p>
+  <p>Widżet z mikrofonem zostaje w zanadrzu jako plan awaryjny na wypadek, gdyby most przez Google Tasks kiedyś przestał działać.</p>
+</section>
+
+<footer>
+  Momentum · specyfikacja v1 · nazwa robocza, do zmiany przed pierwszym buildem
+</footer>
+</div>
