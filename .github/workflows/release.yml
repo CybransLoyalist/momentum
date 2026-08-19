@@ -44,6 +44,14 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keystore.properties
 
+      # Obraz runnera nie musi miec najnowszej platformy, a Compose 1.12 wymaga API 37.
+      # Taniej doinstalowac jawnie niz zgadywac, co akurat jest w obrazie.
+      - name: Doinstaluj platforme Androida
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platforms;android-37.0" "build-tools;37.0.0"
+
       - name: Ustal wersje
         id: wersja
         run: |
