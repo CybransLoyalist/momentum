@@ -11,6 +11,22 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-19 · Zadanie cykliczne widać w Planie także wtedy, gdy wypada dziś
+
+Plan pokazywał wyłącznie terminy w przyszłości, więc zadanie cykliczne wypadające dziś
+znikało z Planu i wracało tam dopiero po odhaczeniu. Lista, która gubi zaplanowaną rzecz
+dokładnie w dniu, w którym ma być zrobiona, kłamie o tym, co jest zaplanowane.
+
+Teraz Plan pokazuje wszystkie zadania cykliczne niezależnie od daty — także dzisiejsze
+i zaległe — plus, jak dotąd, wszystko z terminem w przyszłości. Zadanie cykliczne na dziś
+jest więc widoczne równocześnie w ToDo i w Planie. To świadome zdublowanie: ToDo odpowiada
+na „co robię dziś”, Plan na „co mnie czeka”, a cykliczne zadanie należy do obu odpowiedzi.
+
+Doszły przy tym sekcje „Zaległe” i „Dziś”, bo od kiedy trafiają tu terminy z przeszłości,
+„Jutro” musi znaczyć jutro, a nie wszystko do jutra włącznie.
+
+**Ślad:** `MomentumViewModel.scheduledState`, `ScheduledScreen.groupByHorizon`.
+
 ## 2026-08-19 · Zadania cykliczne jednak się starzeją
 
 Specyfikacja przeczyła sama sobie. Sekcja 02 mówiła „nawyki i zadania cykliczne nie starzeją

@@ -157,11 +157,18 @@ class MomentumViewModel(
         .map { list -> list.map { TodoUi(it) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** Wszystko z terminem w przyszlosci, najblizsze na gorze. */
+    /**
+     * Wszystko z terminem w przyszlosci plus zadania cykliczne, najblizsze na gorze.
+     * Cykliczne pokazuja sie tu niezaleznie od daty - takze te wypadajace dzisiaj albo
+     * zalegle, bo one z definicji sa czescia planu i lista, ktora je gubi az do
+     * odhaczenia, klamie o tym, co jest zaplanowane.
+     */
     val scheduledState: StateFlow<List<TodoUi>> = today.flatMapLatest { day ->
         combine(todos.open(Bucket.GLOWNE), todos.rules()) { list, rules ->
             val byId = rules.associateBy { it.id }
-            list.filter { it.plannedDate != null && it.plannedDate.isAfter(day) }
+            list.filter {
+                it.plannedDate != null && (it.plannedDate.isAfter(day) || it.recurrenceId != null)
+            }
                 .sortedBy { it.plannedDate }
                 .map { TodoUi(it, rule = it.recurrenceId?.let(byId::get)) }
         }

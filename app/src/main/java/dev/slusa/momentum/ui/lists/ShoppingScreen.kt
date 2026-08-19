@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.ui.ShoppingUiState
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.components.AddBar
+import dev.slusa.momentum.ui.components.CollapsibleHeader
 import dev.slusa.momentum.ui.components.EmptyState
 import dev.slusa.momentum.ui.components.ScreenHeader
-import dev.slusa.momentum.ui.components.SectionHeader
 import dev.slusa.momentum.ui.components.TodoRow
 
 /**
@@ -42,6 +42,9 @@ fun ShoppingScreen(
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
+    // Kupione domyslnie zwiniete, tak samo jak zrobione na liscie ToDo - to archiwum
+    // na jedno klikniecie wstecz, a nie tresc, ktora trzeba miec przed oczami.
+    var doneExpanded by remember { mutableStateOf(false) }
 
     val submit = {
         if (draft.isNotBlank()) {
@@ -56,7 +59,7 @@ fun ShoppingScreen(
         topBar = {
             ScreenHeader(
                 title = "Zakupy",
-                subtitle = if (state.open.isEmpty()) "lista pusta" else "${state.open.size} do kupienia",
+                subtitle = if (state.open.isEmpty()) "Lista pusta" else "${state.open.size} do kupienia",
             )
         },
         bottomBar = {
@@ -96,7 +99,11 @@ fun ShoppingScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(Modifier.weight(1f)) {
-                            SectionHeader("Kupione", state.done.size)
+                            CollapsibleHeader(
+                                label = "Kupione (${state.done.size})",
+                                expanded = doneExpanded,
+                                onClick = { doneExpanded = !doneExpanded },
+                            )
                         }
                         TextButton(onClick = onClearDone) {
                             Text(
@@ -107,12 +114,14 @@ fun ShoppingScreen(
                     }
                 }
 
-                items(state.done, key = { "kupione-${it.todo.id}" }) { item ->
-                    TodoRow(
-                        item = item,
-                        onToggleDone = { onToggleDone(item.todo.id, false) },
-                        onClick = { onItemClick(item) },
-                    )
+                if (doneExpanded) {
+                    items(state.done, key = { "kupione-${it.todo.id}" }) { item ->
+                        TodoRow(
+                            item = item,
+                            onToggleDone = { onToggleDone(item.todo.id, false) },
+                            onClick = { onItemClick(item) },
+                        )
+                    }
                 }
             }
         }

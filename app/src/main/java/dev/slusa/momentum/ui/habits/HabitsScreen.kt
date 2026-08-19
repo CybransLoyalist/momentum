@@ -58,7 +58,7 @@ fun HabitsScreen(
             ScreenHeader(
                 title = "Nawyki",
                 subtitle = if (items.isEmpty()) {
-                    "nic jeszcze nie ma"
+                    "Nic jeszcze nie ma"
                 } else {
                     "${items.size} w obiegu · dotknij, żeby zmienić dni"
                 },

@@ -37,8 +37,8 @@ private val SHORT_DATE: DateTimeFormatter =
     DateTimeFormatter.ofPattern("EEE, d MMM", Locale.forLanguageTag("pl"))
 
 /**
- * Zadania z terminem w przyszlosci. Grupowanie jest wzgledne, nie po numerach
- * tygodni - "w przyszlym tygodniu" niesie informacje, "tydzien 34" nie.
+ * Zadania z terminem w przyszlosci oraz wszystkie cykliczne. Grupowanie jest wzgledne,
+ * nie po numerach tygodni - "w przyszlym tygodniu" niesie informacje, "tydzien 34" nie.
  */
 @Composable
 fun ScheduledScreen(
@@ -72,7 +72,7 @@ fun ScheduledScreen(
         topBar = {
             ScreenHeader(
                 title = "Zaplanowane",
-                subtitle = if (items.isEmpty()) "nic w kolejce" else "${items.size} w kolejce",
+                subtitle = if (items.isEmpty()) "Nic w kolejce" else "${items.size} w kolejce",
             )
         },
         bottomBar = {
@@ -119,7 +119,11 @@ fun ScheduledScreen(
     }
 }
 
-/** Etykiety wzgledne wzgledem dzisiaj - blizsze terminy dostaja wiecej rozdzielczosci. */
+/**
+ * Etykiety wzgledne wzgledem dzisiaj - blizsze terminy dostaja wiecej rozdzielczosci.
+ * Zaleglosci i dzisiejsze maja wlasne sekcje, bo od kiedy trafiaja tu takze zadania
+ * cykliczne, "Jutro" musi znaczyc jutro, a nie wszystko do jutra wlacznie.
+ */
 private fun groupByHorizon(
     items: List<TodoUi>,
     today: LocalDate,
@@ -130,7 +134,9 @@ private fun groupByHorizon(
         val date = item.todo.plannedDate ?: return@forEach
         val days = ChronoUnit.DAYS.between(today, date)
         val label = when {
-            days <= 1L -> "Jutro"
+            days < 0L -> "Zaległe"
+            days == 0L -> "Dziś"
+            days == 1L -> "Jutro"
             days <= 7L -> "W ciągu tygodnia"
             days <= 30L -> "W ciągu miesiąca"
             else -> "Później"

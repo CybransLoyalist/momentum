@@ -9,21 +9,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.data.RecurrenceMode
@@ -119,7 +125,7 @@ fun RecurrenceSheet(
 
             Label("CO ILE")
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Stepper(value = everyN, range = 1..30) { everyN = it }
+                NumberField(value = everyN, range = 1..99) { everyN = it }
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = UNIT_LABELS.getValue(unit),
@@ -146,7 +152,7 @@ fun RecurrenceSheet(
                 Spacer(Modifier.height(20.dp))
                 Label("KTÓREGO")
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Stepper(value = anchorDay, range = 1..31) { anchorDay = it }
+                    NumberField(value = anchorDay, range = 1..31) { anchorDay = it }
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = "dnia miesiąca",
@@ -206,19 +212,36 @@ private fun Label(text: String) {
 }
 
 /**
- * Liczba z dwoma przyciskami zamiast pola tekstowego - kciukiem wygodniej dobic
- * do trojki niz otwierac klawiature numeryczna dla jednej cyfry.
+ * Liczba wpisywana z klawiatury numerycznej. Przyciski plus-minus wygladaly czysciej,
+ * ale dobicie nimi do trzydziestego pierwszego to trzydziesci dotkniec - przy tym
+ * zakresie wpisanie dwoch cyfr wygrywa bezapelacyjnie.
  */
 @Composable
-private fun Stepper(value: Int, range: IntRange, onChange: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Chip("−", active = false) { onChange((value - 1).coerceIn(range)) }
-        Text(
-            text = value.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
-        Chip("+", active = false) { onChange((value + 1).coerceIn(range)) }
+private fun NumberField(value: Int, range: IntRange, onChange: (Int) -> Unit) {
+    var text by remember { mutableStateOf(value.toString()) }
+
+    // Zmiana z zewnatrz - np. inny tryb podstawil inna kotwice - ma byc widoczna w polu.
+    LaunchedEffect(value) {
+        if (text.toIntOrNull() != value) text = value.toString()
     }
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = { raw ->
+            val digits = raw.filter { it.isDigit() }.take(2)
+            text = digits
+            digits.toIntOrNull()?.takeIf { it in range }?.let(onChange)
+        },
+        modifier = Modifier
+            .width(88.dp)
+            // Po wyjsciu z pola wracamy do ostatniej sensownej wartosci, zeby na ekranie
+            // nie zostalo puste okienko albo zero, ktorego regula i tak nie przyjela.
+            .onFocusChanged { focus -> if (!focus.isFocused) text = value.toString() },
+        singleLine = true,
+        textStyle = MaterialTheme.typography.titleMedium,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done,
+        ),
+    )
 }

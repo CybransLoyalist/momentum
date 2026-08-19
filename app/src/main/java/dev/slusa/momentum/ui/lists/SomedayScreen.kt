@@ -54,7 +54,7 @@ fun SomedayScreen(
         topBar = {
             ScreenHeader(
                 title = "Kiedyś",
-                subtitle = if (items.isEmpty()) "pusto" else "${items.size} odłożonych",
+                subtitle = if (items.isEmpty()) "Pusto" else "${items.size} odłożonych",
             )
         },
         bottomBar = {
@@ -86,7 +86,8 @@ fun SomedayScreen(
                 item {
                     EmptyState(
                         "Nic odłożonego.",
-                        "Tu trafia to, o czym nie chcesz zapomnieć, ale nie dziś.",
+                        "Miejsce na rzeczy, o których chcesz pamiętać, ale nie chcesz ich " +
+                            "oglądać codziennie.",
                     )
                 }
             }
