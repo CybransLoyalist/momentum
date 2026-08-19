@@ -2,7 +2,8 @@
 
 Aplikacja na Androida do todosów i nawyków. Prywatna, dla jednej osoby, bez Google Play.
 
-Pełna specyfikacja: [`docs/spec.html`](docs/spec.html).
+Pełna specyfikacja: [`docs/spec.html`](docs/spec.html) — jak jest teraz.
+Dziennik decyzji: [`docs/decyzje.md`](docs/decyzje.md) — dlaczego tak, a nie inaczej.
 
 ## Środowisko
 
@@ -70,5 +71,6 @@ app/src/main/java/dev/slusa/momentum/
   MainActivity.kt          ekran startowy
   ui/theme/                paleta, typografia, rampa starzenia zadań
 docs/spec.html             specyfikacja
+docs/decyzje.md            dziennik decyzji
 .github/workflows/         build i publikacja wydań
 ```
