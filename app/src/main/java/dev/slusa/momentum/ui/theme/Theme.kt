@@ -11,31 +11,31 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val LightScheme = lightColorScheme(
-    primary = GreenDeep,
+    primary = BlueDeep,
     onPrimary = Color.White,
-    primaryContainer = GreenSoftLight,
-    onPrimaryContainer = GreenDeep,
+    primaryContainer = BlueSoftLight,
+    onPrimaryContainer = BlueDeep,
     background = BackgroundLight,
     onBackground = InkLight,
     surface = SurfaceLight,
     onSurface = InkLight,
     surfaceVariant = SurfaceVariantLight,
-    onSurfaceVariant = Color(0xFF3F4C45),
+    onSurfaceVariant = Color(0xFF43505F),
     outline = OutlineLight,
     outlineVariant = OutlineLight,
 )
 
 private val DarkScheme = darkColorScheme(
-    primary = GreenBright,
-    onPrimary = Color(0xFF06150F),
-    primaryContainer = GreenSoftDark,
-    onPrimaryContainer = GreenBright,
+    primary = BlueBright,
+    onPrimary = Color(0xFF06131D),
+    primaryContainer = BlueSoftDark,
+    onPrimaryContainer = BlueBright,
     background = BackgroundDark,
     onBackground = InkDark,
     surface = SurfaceDark,
     onSurface = InkDark,
     surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = Color(0xFFAEBCB4),
+    onSurfaceVariant = Color(0xFFAAB7C4),
     outline = OutlineDark,
     outlineVariant = OutlineDark,
 )

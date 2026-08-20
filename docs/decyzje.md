@@ -11,6 +11,27 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Paleta na niebiesko, rampa starzenia zostaje ciepła
+
+Akcent aplikacji przeszedł z głębokiej zieleni na głęboki błękit, razem z neutralnymi, które
+mają teraz niebieski bias zamiast zielonego.
+
+Przy okazji zniknął problem, którego wcześniej nie było widać: **ten sam zielony niósł dwie
+różne rzeczy** — markę aplikacji i „świeże" z rampy starzenia. Zielony pasek wieku na zielonym
+akcencie gubił się we własnym tle i przestawał być sygnałem.
+
+Rampa **nie została przemalowana na odcienie niebieskiego**, mimo że tak byłoby spójniej.
+Ona niesie znaczenie, a nie markę: zielone-świeże i czerwone-spóźnione czyta każdy bez
+tłumaczenia, a gradient wewnątrz jednego koloru zamieniłby sygnał w dekorację. Pierwszy
+przystanek zszedł tylko w stronę morskiej zieleni, żeby świeży pasek nie kłócił się z resztą
+ekranu.
+
+Ikona przestała być trzema rosnącymi słupkami, bo czytało się to jak wykres sprzedaży, a nie
+jak aplikacja do robienia rzeczy. Teraz jest ptaszek z dwiema kreskami pędu za nim — jedno mówi
+„zadanie", drugie „momentum", i oba da się rozpoznać w rozmiarze ikony na ekranie głównym.
+
+**Ślad:** `ui/theme/Color.kt`, `res/drawable/ic_launcher_foreground.xml`, spec sekcja z paletą.
+
 ## 2026-08-20 · Most głosowy odłożony, bo Google żąda własnej strony
 
 Przejście projektu OAuth na produkcję okazało się wymagać **adresu strony domowej i polityki
