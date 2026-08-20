@@ -2,11 +2,13 @@ package dev.slusa.momentum.backup
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.room.withTransaction
 import dev.slusa.momentum.data.MomentumDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.time.LocalDate
 
 /**
@@ -32,6 +34,48 @@ class BackupRepository(
             habits = db.habitDao().allHabits(),
             completions = db.habitDao().allCompletions(),
         )
+    }
+
+    /**
+     * Kopia w katalogu aplikacji, ktora zabiera Android Auto Backup.
+     *
+     * Auto Backup i tak kopiuje plik SQLite, ale zywa baza z dziennikiem WAL moze
+     * zostac zlapana w polowie zapisu. JSON jest zawsze spojny i na tyle maly, ze
+     * dublowanie danych nic nie kosztuje - a na nowym telefonie to on ratuje sytuacje,
+     * gdy odtworzenie bazy sie nie uda.
+     */
+    suspend fun writeLocalSnapshot(): Boolean = withContext(Dispatchers.IO) {
+        runCatching {
+            File(context.filesDir, SNAPSHOT).writeText(BackupFormat.toJson(snapshot()))
+        }.isSuccess
+    }
+
+    /** Kopia z katalogu aplikacji albo null, gdy jej nie ma lub jest pusta. */
+    suspend fun localSnapshot(): BackupData? = withContext(Dispatchers.IO) {
+        runCatching {
+            val file = File(context.filesDir, SNAPSHOT)
+            if (!file.exists()) return@runCatching null
+            BackupFormat.fromJson(file.readText()).takeUnless { it.isEmpty }
+        }.getOrNull()
+    }
+
+    /** Czy w bazie cokolwiek jest - rozstrzyga, czy proponowac odtworzenie po zmianie telefonu. */
+    suspend fun isEmpty(): Boolean = withContext(Dispatchers.IO) {
+        db.todoDao().all().isEmpty() && db.habitDao().allHabits().isEmpty()
+    }
+
+    /**
+     * Plik do wyslania na zewnatrz. Katalog podreczny, bo to kopia jednorazowa -
+     * system sam go sprzata i nie trafia drugi raz do Auto Backupu.
+     */
+    suspend fun fileToShare(today: LocalDate = LocalDate.now()): Uri? = withContext(Dispatchers.IO) {
+        runCatching {
+            val dir = File(context.cacheDir, "udostepnianie").apply { mkdirs() }
+            val file = File(dir, "momentum-$today.json")
+            file.writeText(BackupFormat.toJson(snapshot()))
+
+            FileProvider.getUriForFile(context, "${context.packageName}.kopie", file)
+        }.getOrNull()
     }
 
     /** Zapisuje kopie w wybranym folderze i zwraca nazwe pliku. */
@@ -87,5 +131,9 @@ class BackupRepository(
             .sortedByDescending { it.name }
 
         files.drop(keep).forEach { it.delete() }
+    }
+
+    private companion object {
+        const val SNAPSHOT = "kopia.json"
     }
 }

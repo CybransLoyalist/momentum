@@ -1,5 +1,6 @@
 package dev.slusa.momentum.ui
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -17,16 +18,21 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.slusa.momentum.backup.BackupData
 import dev.slusa.momentum.ui.components.PickDateDialog
 import dev.slusa.momentum.ui.components.TodoActionsSheet
 import dev.slusa.momentum.ui.icons.MomentumIcons
@@ -84,6 +90,31 @@ fun MomentumShell(vm: MomentumViewModel) {
     val allHabits by vm.habitsState.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val backupMessage by vm.backupMessage.collectAsStateWithLifecycle()
+    val foundSnapshot by vm.foundSnapshot.collectAsStateWithLifecycle()
+    val shareRequest by vm.shareRequest.collectAsStateWithLifecycle()
+
+    // Wysylka pliku na zewnatrz idzie przez systemowe okno wyboru - dzieki temu kopia
+    // laduje tam, gdzie chcesz, bez zadnego logowania po naszej stronie.
+    val context = LocalContext.current
+    LaunchedEffect(shareRequest) {
+        val uri = shareRequest ?: return@LaunchedEffect
+        val send = Intent(Intent.ACTION_SEND)
+            .setType("application/json")
+            .putExtra(Intent.EXTRA_STREAM, uri)
+            .putExtra(Intent.EXTRA_SUBJECT, "Kopia Momentum")
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        runCatching { context.startActivity(Intent.createChooser(send, "Wyślij kopię")) }
+        vm.shareHandled()
+    }
+
+    // Pusta baza plus znaleziona kopia to praktycznie zawsze swiezo przeniesiony telefon.
+    foundSnapshot?.let { data ->
+        RestoreFoundDialog(
+            data = data,
+            onRestore = vm::restoreFoundSnapshot,
+            onDismiss = vm::dismissFoundSnapshot,
+        )
+    }
 
     editorTarget?.let { target ->
         TaskEditorScreen(
@@ -119,6 +150,7 @@ fun MomentumShell(vm: MomentumViewModel) {
             backupMessage = backupMessage,
             onPickBackupFolder = vm::setBackupFolder,
             onBackupNow = vm::backupNow,
+            onShareBackup = vm::shareBackup,
             onRestore = vm::restoreFrom,
         )
         return
@@ -253,4 +285,38 @@ fun MomentumShell(vm: MomentumViewModel) {
             },
         )
     }
+}
+
+/**
+ * Propozycja odtworzenia z kopii znalezionej przy pustej bazie. Pytamy, zamiast robic
+ * to po cichu: gdyby ktos swiadomie wyczyscil aplikacje, ciche przywrocenie wszystkiego
+ * byloby dokladnie odwrotnoscia tego, czego chcial.
+ */
+@Composable
+private fun RestoreFoundDialog(
+    data: BackupData,
+    onRestore: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val stamp = data.createdAt
+        ?.atZone(java.time.ZoneId.systemDefault())
+        ?.toLocalDate()
+        ?.format(java.time.format.DateTimeFormatter.ofPattern("d MMMM yyyy", java.util.Locale.forLanguageTag("pl")))
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Znaleziono kopię") },
+        text = {
+            Text(
+                buildString {
+                    append("Aplikacja jest pusta, ale została kopia")
+                    if (stamp != null) append(" z $stamp")
+                    append(": ${data.todos.size} zadań i ${data.habits.size} nawyków ")
+                    append("razem z historią. Przywrócić?")
+                }
+            )
+        },
+        confirmButton = { TextButton(onClick = onRestore) { Text("Przywróć") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Zacznij od zera") } },
+    )
 }

@@ -11,6 +11,36 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Kopia musi przeżyć utratę telefonu, nie tylko pomyłkę
+
+Pytanie „a czy ta kopia będzie poza telefonem?" obnażyło dziurę. Pliki JSON lądowały w folderze
+w pamięci telefonu, czyli ginęły razem z nim. Poza urządzenie jechał tylko Android Auto Backup —
+i to niekompletny.
+
+Trzy naprawy:
+
+**Reguły Auto Backup obejmowały złą domenę.** Był tam `database` i `sharedpref`, ale DataStore,
+w którym siedzą wszystkie ustawienia, zapisuje do `files/`. Dane wracały na nowym telefonie,
+a tryb urlopowy, godziny przypomnień i folder na kopie zaczynały od zera. Błąd z etapu pierwszego,
+niewidoczny aż do pierwszej wymiany telefonu — czyli dokładnie wtedy, kiedy najbardziej boli.
+
+**Nocna kopia pisze też zrzut do katalogu aplikacji**, który Auto Backup zabiera. Sam plik SQLite
+też jedzie, ale żywa baza z dziennikiem WAL może zostać skopiowana w połowie zapisu; JSON jest
+zawsze spójny i na tyle mały, że dublowanie danych nic nie kosztuje. Przy starcie z pustą bazą
+aplikacja proponuje odtworzenie z tego pliku — pyta, zamiast robić to po cichu, bo świadome
+wyczyszczenie aplikacji i ciche przywrócenie wszystkiego to dokładne przeciwieństwa.
+
+**„Wyślij kopię"** przez systemowe okno udostępniania. Bez OAuth, bez tokenów, bez Drive API —
+jedno dotknięcie i plik jest w mailu albo na Dysku. To jedyna kopia, o której da się powiedzieć
+na pewno, że opuściła telefon, bo sama ją tam wysyłasz.
+
+Instrukcja wymiany telefonu wylądowała w ustawieniach, a nie w README. Czyta się ją trzymając
+w ręku właśnie ten telefon, a Momentum idzie poza sklepem, więc odtworzenie przy konfiguracji
+nowego urządzenia jest mniej pewne niż przy zwykłej aplikacji — to nie jest moment na zgadywanie.
+
+**Ślad:** `res/xml/data_extraction_rules.xml`, `BackupRepository.writeLocalSnapshot`,
+`SettingsScreen.PhoneSwapCard`.
+
 ## 2026-08-20 · Przypomnienia jako łańcuch zadań jednorazowych
 
 WorkManager nie ma zadania cyklicznego o konkretnej godzinie — okresowe potrafi odpalić się

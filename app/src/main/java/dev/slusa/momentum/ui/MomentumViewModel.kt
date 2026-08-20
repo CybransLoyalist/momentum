@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import android.net.Uri
+import dev.slusa.momentum.backup.BackupData
 import dev.slusa.momentum.backup.BackupRepository
 import dev.slusa.momentum.data.Bucket
 import dev.slusa.momentum.data.Habit
@@ -87,6 +88,16 @@ class MomentumViewModel(
      * sie stalo, a to jest dokladnie ta funkcja, ktorej trzeba ufac.
      */
     val backupMessage: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    /**
+     * Kopia znaleziona w katalogu aplikacji przy pustej bazie - czyli praktycznie
+     * zawsze po przeniesieniu na nowy telefon, gdy Auto Backup odtworzyl pliki, ale
+     * nie odtworzyl bazy. Data sluzy do pytania, zanim cokolwiek nadpiszemy.
+     */
+    val foundSnapshot: MutableStateFlow<BackupData?> = MutableStateFlow(null)
+
+    /** Plik kopii przygotowany do wyslania na zewnatrz. */
+    val shareRequest: MutableStateFlow<Uri?> = MutableStateFlow(null)
 
     val settings: StateFlow<Settings> = settingsStore.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
@@ -209,6 +220,9 @@ class MomentumViewModel(
 
     init {
         viewModelScope.launch { todos.purgeOldCompleted() }
+        viewModelScope.launch {
+            if (backups.isEmpty()) foundSnapshot.value = backups.localSnapshot()
+        }
     }
 
     /** Wolane przy powrocie do aplikacji - lapie zmiane doby bez restartu. */
@@ -298,6 +312,30 @@ class MomentumViewModel(
         }
     }
 
+    fun shareBackup() = viewModelScope.launch {
+        val uri = backups.fileToShare(today.value)
+        if (uri == null) {
+            backupMessage.value = "Nie udało się przygotować pliku."
+        } else {
+            shareRequest.value = uri
+        }
+    }
+
+    fun shareHandled() {
+        shareRequest.value = null
+    }
+
+    fun restoreFoundSnapshot() = viewModelScope.launch {
+        val data = foundSnapshot.value ?: return@launch
+        backups.restore(data)
+        foundSnapshot.value = null
+        backupMessage.value = "Przywrócone z kopii."
+    }
+
+    fun dismissFoundSnapshot() {
+        foundSnapshot.value = null
+    }
+
     fun restoreFrom(uri: Uri) = viewModelScope.launch {
         val data = backups.readFrom(uri)
         if (data == null) {
@@ -306,6 +344,7 @@ class MomentumViewModel(
         }
 
         backups.restore(data)
+        foundSnapshot.value = null
         backupMessage.value = "Wczytane: ${data.todos.size} zadań, ${data.habits.size} nawyków."
     }
 

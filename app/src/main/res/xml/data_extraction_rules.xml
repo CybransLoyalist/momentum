@@ -2,16 +2,30 @@
 <!--
   Warstwa A kopii zapasowej ze specyfikacji: Android sam wysyla dane aplikacji
   na Dysk Google raz na dobe i odtwarza je na nowym telefonie.
+
+  Domena "file" jest tu nieoczywista i jej brak byl bledem. DataStore, w ktorym
+  siedza wszystkie ustawienia - urlop, godziny przypomnien, folder na kopie -
+  zapisuje do files/datastore, a nie do sharedpref. Bez tej linii dane wracaly
+  na nowym telefonie, a ustawienia zaczynaly od zera.
+
+  Do tego jedzie kopia.json: spojny, samodzielny zrzut calej bazy pisany co noc.
+  Plik SQLite mozna zlapac w polowie zapisu, plik JSON nie - a jest na tyle maly,
+  ze dublowanie danych nic nie kosztuje.
+
   Wykluczamy tokeny OAuth - te maja byc pobrane na nowo po zalogowaniu.
 -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="." />
         <include domain="sharedpref" path="." />
+        <include domain="file" path="datastore" />
+        <include domain="file" path="kopia.json" />
         <exclude domain="sharedpref" path="auth.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="database" path="." />
         <include domain="sharedpref" path="." />
+        <include domain="file" path="datastore" />
+        <include domain="file" path="kopia.json" />
     </device-transfer>
 </data-extraction-rules>

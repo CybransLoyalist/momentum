@@ -31,8 +31,12 @@ class BackupWorker(
 
         return try {
             val settings = app.settings.settings.first()
-            val folder = settings.backupFolder
 
+            // Zrzut do katalogu aplikacji idzie zawsze, takze bez wskazanego folderu -
+            // to on jedzie na Dysk z Auto Backupem i ratuje sytuacje na nowym telefonie.
+            app.backups.writeLocalSnapshot()
+
+            val folder = settings.backupFolder
             if (folder != null) {
                 val name = app.backups.writeTo(Uri.parse(folder))
                 if (name != null) app.settings.setLastBackup(LocalDate.now())

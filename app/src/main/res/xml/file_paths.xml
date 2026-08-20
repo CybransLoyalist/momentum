@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kopia do wyslania lezy w katalogu podrecznym, a nie w files/ - inaczej trafialaby
+  do Auto Backupu drugi raz, bez powodu. System sam sprzata ten katalog.
+-->
+<paths>
+    <cache-path name="do-wyslania" path="udostepnianie/" />
+</paths>

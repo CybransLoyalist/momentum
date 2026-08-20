@@ -20,7 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -82,6 +85,7 @@ fun SettingsScreen(
     backupMessage: String?,
     onPickBackupFolder: (String) -> Unit,
     onBackupNow: () -> Unit,
+    onShareBackup: () -> Unit,
     onRestore: (Uri) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -262,9 +266,12 @@ fun SettingsScreen(
                     message = backupMessage,
                     onPickFolder = { pickFolder.launch(null) },
                     onBackupNow = onBackupNow,
+                    onShare = onShareBackup,
                     onRestore = { pickBackupFile.launch(arrayOf("*/*")) },
                 )
             }
+
+            item { PhoneSwapCard() }
 
             item {
                 VacationCard(
@@ -384,6 +391,7 @@ private fun BackupCard(
     message: String?,
     onPickFolder: () -> Unit,
     onBackupNow: () -> Unit,
+    onShare: () -> Unit,
     onRestore: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -437,6 +445,10 @@ private fun BackupCard(
                     enabled = folder != null,
                     contentPadding = PaddingValues(0.dp),
                 ) { Text("Zapisz teraz") }
+                Spacer(Modifier.padding(horizontal = 8.dp))
+                TextButton(onClick = onShare, contentPadding = PaddingValues(0.dp)) {
+                    Text("Wyślij kopię")
+                }
             }
 
             TextButton(onClick = onRestore, contentPadding = PaddingValues(0.dp)) {
@@ -553,3 +565,143 @@ private fun VacationCard(
 private fun canPostNotifications(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
         PackageManager.PERMISSION_GRANTED
+
+/**
+ * Instrukcja wymiany telefonu, zwinieta domyslnie.
+ *
+ * Momentum idzie poza sklepem, wiec odtworzenie przy konfiguracji nowego telefonu
+ * jest mniej pewne niz przy zwyklej aplikacji - a to jest dokladnie ten moment,
+ * w ktorym nie chce sie zgadywac. Kroki sa tu, a nie w README na komputerze, bo
+ * czyta sie je majac w reku wlasnie ten telefon.
+ */
+@Composable
+private fun PhoneSwapCard() {
+    val scheme = MaterialTheme.colorScheme
+    var expanded by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = scheme.surface,
+        border = BorderStroke(1.dp, scheme.outline),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = "Wymiana telefonu",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = scheme.onSurface,
+                    )
+                    Text(
+                        text = "Co zrobić przed i po, żeby nic nie przepadło.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = scheme.onSurfaceVariant,
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Default.KeyboardArrowUp
+                    } else {
+                        Icons.Default.KeyboardArrowDown
+                    },
+                    contentDescription = if (expanded) "Zwiń" else "Rozwiń",
+                    tint = scheme.onSurfaceVariant,
+                )
+            }
+
+            if (!expanded) return@Column
+
+            Spacer(Modifier.height(16.dp))
+            Step("NA STARYM TELEFONIE", null)
+            Step(
+                "1. Zapisz kopię",
+                "Karta wyżej, przycisk „Zapisz teraz”. Sprawdź, że data ostatniej kopii " +
+                    "to dzisiaj.",
+            )
+            Step(
+                "2. Wyślij ją sobie",
+                "Przycisk „Wyślij kopię” i wybierz maila, Dysk albo cokolwiek, co przeżyje " +
+                    "utratę telefonu. To jedyna kopia, której możesz być pewna — reszta " +
+                    "dzieje się poza twoją kontrolą.",
+            )
+            Step(
+                "3. Sprawdź kopię Google",
+                "Ustawienia systemu → Google → Kopia zapasowa. Musi być włączona i mieć " +
+                    "dzisiejszą datę, inaczej nie ma czego odtwarzać.",
+            )
+
+            Spacer(Modifier.height(16.dp))
+            Step("NA NOWYM TELEFONIE", null)
+            Step(
+                "4. Zainstaluj Momentum",
+                "Obtainium → dodaj aplikację → github.com/CybransLoyalist/momentum. " +
+                    "Sklepu z aplikacjami tu nie ma i nie będzie.",
+            )
+            Step(
+                "5. Uruchom i zobacz, co wróciło",
+                "Jeśli zadania i nawyki są na miejscu — gotowe. Sprawdź jeszcze, czy " +
+                    "nawyki mają swoje momentum, bo to znaczy, że wróciła też historia.",
+            )
+            Step(
+                "6. Jeśli aplikacja jest pusta",
+                "Momentum sama zaproponuje przywrócenie z kopii, którą Android przywiózł " +
+                    "razem z aplikacją. Zgódź się.",
+            )
+            Step(
+                "7. Jeśli i tego nie ma",
+                "Skopiuj na telefon plik JSON wysłany w kroku 2, a potem w karcie wyżej " +
+                    "wybierz „Wczytaj kopię…” i wskaż go.",
+            )
+            Step(
+                "8. Ustaw na nowo to, czego kopia nie obejmuje",
+                "Zgoda na powiadomienia, „Nieograniczone” w ustawieniach baterii i folder " +
+                    "na kopie — folder wskazuje się od zera, bo uprawnienie do niego jest " +
+                    "przypisane do starego telefonu.",
+            )
+
+            Spacer(Modifier.height(16.dp))
+            Step("O CZYM WARTO WIEDZIEĆ", null)
+            Step(
+                "Aktualizacje wymagają tego samego klucza",
+                "Wydania podpisuje klucz leżący poza telefonem i poza repozytorium. " +
+                    "Jeśli zginie, Android potraktuje kolejne wydania jako inną aplikację " +
+                    "i trzeba będzie odinstalować Momentum, tracąc dane. Kopia klucza jest " +
+                    "równie ważna jak kopia danych.",
+            )
+        }
+    }
+}
+
+@Composable
+private fun Step(title: String, text: String?) {
+    val scheme = MaterialTheme.colorScheme
+
+    if (text == null) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        return
+    }
+
+    Column(Modifier.padding(bottom = 12.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = scheme.onSurface,
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onSurfaceVariant,
+        )
+    }
+}

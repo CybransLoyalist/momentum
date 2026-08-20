@@ -18,7 +18,12 @@ data class BackupData(
     val recurrences: List<Recurrence> = emptyList(),
     val habits: List<Habit> = emptyList(),
     val completions: List<HabitCompletion> = emptyList(),
-)
+    /** Kiedy plik powstal - pokazujemy to, zanim zaproponujemy przywrocenie. */
+    val createdAt: Instant? = null,
+) {
+    val isEmpty: Boolean get() =
+        todos.isEmpty() && habits.isEmpty() && completions.isEmpty() && recurrences.isEmpty()
+}
 
 /**
  * Zamiana danych na JSON i z powrotem, pisana recznie.
@@ -145,6 +150,7 @@ object BackupFormat {
                 val date = obj.dateOrNull("data") ?: return@mapNotNull null
                 HabitCompletion(habitId = obj.optLong("nawykId"), date = date)
             },
+            createdAt = runCatching { Instant.parse(root.optString("utworzono")) }.getOrNull(),
         )
     }
 
