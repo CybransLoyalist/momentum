@@ -11,6 +11,36 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Podlisty zakupów, ale lista główna bez własnego wiersza
+
+Zakupy dostały nazwane podlisty — Ikea, Rossmann, przez internet — domyślnie zwinięte pod listą
+główną. To rzeczy na „kiedy tam będę", a nie na dzisiejsze zakupy, więc nie mają prawa zajmować
+miejsca na wierzchu.
+
+**Lista główna nie ma wiersza w tabeli i nie będzie miała.** Reprezentuje ją `shoppingListId`
+równe null. Dzięki temu nie da się jej skasować ani przemianować, a wszystkie dotychczasowe zakupy
+znalazły się na niej same, bez migracji danych — wystarczyła nowa kolumna.
+
+**Pasek na dole zawsze celuje w listę główną**, a rozwinięta podlista ma własne pole dopisywania
+w środku. Chip przełączający cel byłby jednym polem mniej, ale pamiętałby wybór między wejściami
+na ekran i prędzej czy później mleko wylądowałoby w Ikei. Cena za brak ukrytego stanu to drugie
+pole tekstowe.
+
+**„Kupione" jest jedno, na samym dole, wspólne dla wszystkich list.** Rozważaliśmy sekcję kupionych
+w każdej liście osobno — spójniejsze, bo lista byłaby listą — ale ta sekcja ma dokładnie jedno
+zadanie: cofnąć pomyłkowe odhaczenie. Dzielenie jej dokładałoby podziałów tam, gdzie i tak szuka
+się jednej konkretnej rzeczy. Pozycje z podlist noszą etykietę z nazwą, bo po cofnięciu wracają
+tam, skąd przyszły, a nie na tę listę, którą masz przed oczami.
+
+**Kasowanie listy nie kasuje rzeczy** — wracają na główną, a znika sama szuflada. Kasowanie razem
+z zawartością byłoby jedynym miejscem w aplikacji, gdzie jedno potwierdzenie usuwa wiele rzeczy
+naraz.
+
+Licznik w nagłówku liczy tylko listę główną: czterdzieści pozycji z Ikei doliczone do „43 do
+kupienia" zamieniłyby tę liczbę w szum.
+
+**Ślad:** `data/ShoppingList.kt`, baza w wersji 6, `ui/lists/ShoppingScreen.kt`.
+
 ## 2026-08-20 · Jeden ciepły zielony jako nagroda w obu rampach
 
 Morska zieleń na końcu obu skal czytała się jak status systemu, a nie jak dobra wiadomość — zimna

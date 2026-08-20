@@ -23,7 +23,7 @@ class MomentumApp : Application() {
 
     private val db by lazy { MomentumDatabase.get(this) }
 
-    val todos: TodoRepository by lazy { TodoRepository(db.todoDao(), db.recurrenceDao()) }
+    val todos: TodoRepository by lazy { TodoRepository(db.todoDao(), db.recurrenceDao(), db.shoppingListDao()) }
 
     val habits: HabitRepository by lazy { HabitRepository(db.habitDao()) }
 

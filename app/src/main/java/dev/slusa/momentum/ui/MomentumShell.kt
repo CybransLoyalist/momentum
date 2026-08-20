@@ -212,10 +212,13 @@ fun MomentumShell(vm: MomentumViewModel) {
 
                 Tab.ZAKUPY -> ShoppingScreen(
                     state = shoppingState,
-                    onAdd = { vm.add(it, bucket = dev.slusa.momentum.data.Bucket.ZAKUPY) },
+                    onAdd = vm::addShoppingItem,
                     onToggleDone = vm::setDone,
                     onClearDone = vm::clearShoppingDone,
                     onItemClick = { sheetFor = it },
+                    onAddList = vm::addShoppingList,
+                    onRenameList = vm::renameShoppingList,
+                    onDeleteList = vm::deleteShoppingList,
                 )
 
                 Tab.NAWYKI -> HabitsScreen(

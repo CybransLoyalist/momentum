@@ -15,6 +15,7 @@ import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.data.Reminder
 import dev.slusa.momentum.data.Settings
 import dev.slusa.momentum.data.SettingsStore
+import dev.slusa.momentum.data.ShoppingList
 import dev.slusa.momentum.data.Todo
 import dev.slusa.momentum.data.TodoRepository
 import dev.slusa.momentum.domain.Aging
@@ -45,6 +46,8 @@ data class TodoUi(
     val hasFutureDate: Boolean = false,
     /** Czy kafelek ma pokazywac plame starzenia. Tylko lista ToDo, nie Kiedys i nie zakupy. */
     val ages: Boolean = false,
+    /** Nazwa podlisty zakupow, z ktorej rzecz pochodzi. Null dla listy glownej. */
+    val listName: String? = null,
 )
 
 data class HabitUi(
@@ -72,8 +75,21 @@ data class TodayUiState(
     val isEmpty: Boolean get() = todayCount == 0 && general.isEmpty()
 }
 
-data class ShoppingUiState(
+/** Jedna nazwana podlista zakupow razem z tym, co na niej lezy do kupienia. */
+data class ShoppingListUi(
+    val list: ShoppingList,
     val open: List<TodoUi> = emptyList(),
+)
+
+data class ShoppingUiState(
+    /** Lista glowna: codzienne rzeczy, bez wlasnego wiersza w bazie. */
+    val open: List<TodoUi> = emptyList(),
+    val lists: List<ShoppingListUi> = emptyList(),
+    /**
+     * Kupione ze **wszystkich** list razem. Ta sekcja sluzy wylacznie do cofniecia
+     * pomylkowego odhaczenia, wiec dzielenie jej po listach dodawaloby podzialow tam,
+     * gdzie i tak sie tylko szuka jednej rzeczy.
+     */
     val done: List<TodoUi> = emptyList(),
 )
 
@@ -229,10 +245,23 @@ class MomentumViewModel(
         combine(
             todos.open(Bucket.ZAKUPY),
             todos.completedLastDay(Bucket.ZAKUPY),
-        ) { open, done ->
+            todos.shoppingLists(),
+        ) { open, done, lists ->
+            val nameOf = lists.associate { it.id to it.name }
+
             ShoppingUiState(
-                open = open.map { TodoUi(it) },
-                done = done.map { TodoUi(it) },
+                open = open.filter { it.shoppingListId == null }.map { TodoUi(it) },
+                lists = lists.map { list ->
+                    ShoppingListUi(
+                        list = list,
+                        open = open.filter { it.shoppingListId == list.id }.map { TodoUi(it) },
+                    )
+                },
+                // Etykieta pochodzenia tylko przy rzeczach z podlist - przy kazdej innej
+                // byloby to powtarzanie "lista glowna" przy wszystkim.
+                done = done.map {
+                    TodoUi(it, listName = it.shoppingListId?.let(nameOf::get))
+                },
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ShoppingUiState())
@@ -281,6 +310,18 @@ class MomentumViewModel(
 
 
     fun clearShoppingDone() = viewModelScope.launch { todos.clearCompleted(Bucket.ZAKUPY) }
+
+    fun addShoppingItem(title: String, listId: Long?) = viewModelScope.launch {
+        todos.add(title, bucket = Bucket.ZAKUPY, shoppingListId = listId)
+    }
+
+    fun addShoppingList(name: String) = viewModelScope.launch { todos.addShoppingList(name) }
+
+    fun renameShoppingList(list: ShoppingList, name: String) = viewModelScope.launch {
+        todos.renameShoppingList(list, name)
+    }
+
+    fun deleteShoppingList(id: Long) = viewModelScope.launch { todos.deleteShoppingList(id) }
 
     // --- nawyki ---
 

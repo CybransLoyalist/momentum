@@ -13,6 +13,7 @@ import java.time.LocalDate
 class TodoRepository(
     private val dao: TodoDao,
     private val recurrences: RecurrenceDao,
+    private val shoppingLists: ShoppingListDao,
 ) {
 
     fun open(bucket: Bucket): Flow<List<Todo>> = dao.observeOpen(bucket)
@@ -28,6 +29,7 @@ class TodoRepository(
         bucket: Bucket = Bucket.GLOWNE,
         plannedDate: LocalDate? = null,
         fromSchedule: Boolean = false,
+        shoppingListId: Long? = null,
     ): Long {
         val trimmed = title.trim()
         if (trimmed.isEmpty()) return -1
@@ -38,8 +40,39 @@ class TodoRepository(
                 plannedDate = plannedDate,
                 fromSchedule = fromSchedule,
                 sortIndex = dao.nextTopSortIndex(bucket),
+                shoppingListId = shoppingListId,
             )
         )
+    }
+
+    // --- podlisty zakupow ---
+
+    fun shoppingLists(): Flow<List<ShoppingList>> = shoppingLists.observeAll()
+
+    suspend fun addShoppingList(name: String): Long {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return -1
+        return shoppingLists.insert(
+            ShoppingList(name = trimmed, sortIndex = shoppingLists.nextSortIndex())
+        )
+    }
+
+    suspend fun renameShoppingList(list: ShoppingList, name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        shoppingLists.update(list.copy(name = trimmed))
+    }
+
+    /**
+     * Kasuje podliste, a jej rzeczy wracaja na liste glowna.
+     *
+     * Kasowanie razem z zawartoscia byloby jedynym miejscem w aplikacji, gdzie jedno
+     * potwierdzenie usuwa wiele rzeczy naraz - a lista to tylko szuflada, nie wlasciciel
+     * tego, co w niej lezy.
+     */
+    suspend fun deleteShoppingList(id: Long) {
+        dao.detachFromShoppingList(id)
+        shoppingLists.delete(id)
     }
 
     /**
@@ -117,6 +150,12 @@ class TodoRepository(
         )
     }
 
+    /** Przenosi rzecz miedzy podlistami zakupow; null oznacza liste glowna. */
+    suspend fun moveToShoppingList(id: Long, listId: Long?) {
+        val todo = dao.byId(id) ?: return
+        dao.update(todo.copy(shoppingListId = listId))
+    }
+
     /**
      * Przenosi miedzy listami. Wyjscie z listy glownej gubi termin - rzecz odlozona
      * "na kiedys" z terminem na wczoraj bylaby sprzecznoscia sama w sobie - a razem
@@ -135,6 +174,9 @@ class TodoRepository(
                 plannedDate = null,
                 fromSchedule = false,
                 recurrenceId = null,
+                // Rzecz wracajaca na inna zakladke ladauje na glownej liscie zakupow -
+                // przypisanie do Ikei znaczy cos tylko w koszyku.
+                shoppingListId = null,
             )
         )
     }

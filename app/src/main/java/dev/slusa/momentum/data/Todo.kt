@@ -53,6 +53,12 @@ data class Todo(
      * a nastepny cykl powstaje dopiero po odhaczeniu tego.
      */
     val recurrenceId: Long? = null,
+
+    /**
+     * Na ktorej podliscie zakupow rzecz mieszka. null znaczy liste glowna - patrz
+     * [ShoppingList]. Poza koszykiem zakupow pole jest zawsze puste.
+     */
+    val shoppingListId: Long? = null,
 ) {
     val isDone: Boolean get() = completedAt != null
 }

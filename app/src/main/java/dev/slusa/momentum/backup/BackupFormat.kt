@@ -6,6 +6,7 @@ import dev.slusa.momentum.data.HabitCompletion
 import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.data.RecurrenceMode
 import dev.slusa.momentum.data.RecurrenceUnit
+import dev.slusa.momentum.data.ShoppingList
 import dev.slusa.momentum.data.Todo
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,11 +19,13 @@ data class BackupData(
     val recurrences: List<Recurrence> = emptyList(),
     val habits: List<Habit> = emptyList(),
     val completions: List<HabitCompletion> = emptyList(),
+    val shoppingLists: List<ShoppingList> = emptyList(),
     /** Kiedy plik powstal - pokazujemy to, zanim zaproponujemy przywrocenie. */
     val createdAt: Instant? = null,
 ) {
     val isEmpty: Boolean get() =
-        todos.isEmpty() && habits.isEmpty() && completions.isEmpty() && recurrences.isEmpty()
+        todos.isEmpty() && habits.isEmpty() && completions.isEmpty() &&
+            recurrences.isEmpty() && shoppingLists.isEmpty()
 }
 
 /**
@@ -58,6 +61,7 @@ object BackupFormat {
                         .put("utworzono", todo.createdAt.toEpochMilli())
                         .putOrNull("odhaczono", todo.completedAt?.toEpochMilli())
                         .putOrNull("regulaId", todo.recurrenceId)
+                        .putOrNull("listaZakupow", todo.shoppingListId)
                 )
             }
         })
@@ -86,6 +90,17 @@ object BackupFormat {
                         .put("zarchiwizowany", habit.archived)
                         .put("kolejnosc", habit.sortIndex)
                         .put("start", habit.startDate.toString())
+                )
+            }
+        })
+
+        root.put("listyZakupow", JSONArray().apply {
+            data.shoppingLists.forEach { list ->
+                put(
+                    JSONObject()
+                        .put("id", list.id)
+                        .put("nazwa", list.name)
+                        .put("kolejnosc", list.sortIndex)
                 )
             }
         })
@@ -124,6 +139,11 @@ object BackupFormat {
                         Instant.ofEpochMilli(obj.optLong("odhaczono"))
                     },
                     recurrenceId = if (obj.isNull("regulaId")) null else obj.optLong("regulaId"),
+                    shoppingListId = if (obj.isNull("listaZakupow")) {
+                        null
+                    } else {
+                        obj.optLong("listaZakupow")
+                    },
                 )
             },
             recurrences = root.array("reguly").map { obj ->
@@ -149,6 +169,13 @@ object BackupFormat {
             completions = root.array("odhaczenia").mapNotNull { obj ->
                 val date = obj.dateOrNull("data") ?: return@mapNotNull null
                 HabitCompletion(habitId = obj.optLong("nawykId"), date = date)
+            },
+            shoppingLists = root.array("listyZakupow").map { obj ->
+                ShoppingList(
+                    id = obj.optLong("id"),
+                    name = obj.optString("nazwa"),
+                    sortIndex = obj.optInt("kolejnosc"),
+                )
             },
             createdAt = runCatching { Instant.parse(root.optString("utworzono")) }.getOrNull(),
         )

@@ -6,6 +6,7 @@ import dev.slusa.momentum.data.HabitCompletion
 import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.data.RecurrenceMode
 import dev.slusa.momentum.data.RecurrenceUnit
+import dev.slusa.momentum.data.ShoppingList
 import dev.slusa.momentum.data.Todo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -43,6 +44,15 @@ class BackupFormatTest {
                 createdAt = Instant.ofEpochMilli(1_700_000_100_000),
                 completedAt = Instant.ofEpochMilli(1_700_000_200_000),
             ),
+            Todo(
+                id = 3,
+                title = "Regał Kallax",
+                bucket = Bucket.ZAKUPY,
+                plannedDate = null,
+                sortIndex = -1,
+                createdAt = Instant.ofEpochMilli(1_700_000_300_000),
+                shoppingListId = 9,
+            ),
         ),
         recurrences = listOf(
             Recurrence(
@@ -71,6 +81,9 @@ class BackupFormatTest {
                 startDate = LocalDate.of(2026, 1, 5),
             ),
         ),
+        shoppingLists = listOf(
+            ShoppingList(id = 9, name = "Ikea", sortIndex = 1),
+        ),
         completions = listOf(
             HabitCompletion(habitId = 4, date = LocalDate.of(2026, 8, 18)),
             HabitCompletion(habitId = 4, date = LocalDate.of(2026, 8, 20)),
@@ -85,6 +98,15 @@ class BackupFormatTest {
         assertEquals(sample.recurrences, back.recurrences)
         assertEquals(sample.habits, back.habits)
         assertEquals(sample.completions.toSet(), back.completions.toSet())
+        assertEquals(sample.shoppingLists, back.shoppingLists)
+    }
+
+    @Test
+    fun `przypisanie do podlisty zakupow przezywa obieg`() {
+        val back = BackupFormat.fromJson(BackupFormat.toJson(sample))
+
+        assertEquals(9L, back.todos.first { it.id == 3L }.shoppingListId)
+        assertNull(back.todos.first { it.id == 2L }.shoppingListId)
     }
 
     @Test

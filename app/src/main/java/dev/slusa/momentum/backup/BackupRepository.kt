@@ -33,6 +33,7 @@ class BackupRepository(
             recurrences = db.recurrenceDao().all(),
             habits = db.habitDao().allHabits(),
             completions = db.habitDao().allCompletions(),
+            shoppingLists = db.shoppingListDao().all(),
         )
     }
 
@@ -113,11 +114,13 @@ class BackupRepository(
         db.withTransaction {
             db.todoDao().deleteAll()
             db.recurrenceDao().deleteAll()
+            db.shoppingListDao().deleteAll()
             db.habitDao().deleteAllCompletions()
             db.habitDao().deleteAllHabits()
 
-            // Reguly przed todosami, bo todosy na nie wskazuja.
+            // Reguly i listy przed todosami, bo todosy na nie wskazuja.
             db.recurrenceDao().insertAll(data.recurrences)
+            db.shoppingListDao().insertAll(data.shoppingLists)
             db.todoDao().insertAll(data.todos)
             db.habitDao().insertHabits(data.habits)
             db.habitDao().insertCompletions(data.completions)

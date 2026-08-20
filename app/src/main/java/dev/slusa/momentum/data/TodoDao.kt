@@ -41,6 +41,10 @@ interface TodoDao {
     @Insert
     suspend fun insertAll(todos: List<Todo>)
 
+    /** Przy kasowaniu podlisty rzeczy z niej wracaja na glowna, zamiast ginac razem z nia. */
+    @Query("UPDATE todos SET shoppingListId = NULL WHERE shoppingListId = :listId")
+    suspend fun detachFromShoppingList(listId: Long)
+
     @Query("SELECT * FROM todos WHERE id = :id")
     suspend fun byId(id: Long): Todo?
 
