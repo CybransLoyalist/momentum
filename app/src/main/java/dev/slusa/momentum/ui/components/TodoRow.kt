@@ -38,8 +38,19 @@ import dev.slusa.momentum.domain.contrastOn
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.theme.LocalAgeRamp
 
-/** Dokad siega plama starzenia - musi przykryc kolko odhaczania i zgasnac przed tytulem. */
-private val STAIN_WIDTH = 76.dp
+// Odstepy wiersza trzymane jako stale, bo plama starzenia jest z nimi zwiazana:
+// ma przykryc kolko odhaczania i zgasnac, zanim zacznie sie tytul.
+private val ROW_START = 14.dp
+private val CIRCLE_SIZE = 24.dp
+private val CIRCLE_GAP = 14.dp
+
+/** Tytul zaczyna sie tutaj - plama musi byc wczesniej przezroczysta. */
+private val TEXT_START = ROW_START + CIRCLE_SIZE + CIRCLE_GAP
+
+private val STAIN_WIDTH = TEXT_START - 2.dp
+
+/** Do konca kolka pelny kolor, dalej gasniecie - inaczej cel zniknalby razem z plama. */
+private val STAIN_SOLID = (ROW_START + CIRCLE_SIZE).value / STAIN_WIDTH.value
 
 /**
  * Kafelek zadania, wspolny dla wszystkich list.
@@ -69,11 +80,9 @@ fun TodoRow(
 
     val stainWidthPx = with(LocalDensity.current) { STAIN_WIDTH.toPx() }
     val brush = Brush.horizontalGradient(
-        // Pelny kolor trzyma sie do 40% szerokosci plamy, czyli za kolkiem, i dopiero
-        // potem gasnie - inaczej pod kolkiem bylby juz wyblakly i cel by przepadl.
         colorStops = arrayOf(
             0f to stain,
-            0.4f to stain,
+            STAIN_SOLID to stain,
             1f to stain.copy(alpha = 0f),
         ),
         startX = 0f,
@@ -92,15 +101,16 @@ fun TodoRow(
                 .background(brush),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(ROW_START))
 
             CheckCircle(
+                size = CIRCLE_SIZE,
                 done = item.todo.isDone,
                 onBackground = stain,
                 onClick = onToggleDone,
             )
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(CIRCLE_GAP))
 
             Column(
                 modifier = Modifier
@@ -145,7 +155,12 @@ fun TodoRow(
  * starzenia zwykly szary kontur znikal razem z celem, w ktory trzeba trafic.
  */
 @Composable
-private fun CheckCircle(done: Boolean, onBackground: Color, onClick: () -> Unit) {
+private fun CheckCircle(
+    size: androidx.compose.ui.unit.Dp,
+    done: Boolean,
+    onBackground: Color,
+    onClick: () -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
     val ring = if (onBackground.alpha > 0.15f) {
         contrastOn(onBackground)
@@ -155,7 +170,7 @@ private fun CheckCircle(done: Boolean, onBackground: Color, onClick: () -> Unit)
 
     Box(
         modifier = Modifier
-            .size(24.dp)
+            .size(size)
             .clip(CircleShape)
             .background(if (done) scheme.primary else Color.Transparent)
             .border(
