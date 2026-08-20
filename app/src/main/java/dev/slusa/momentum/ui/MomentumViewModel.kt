@@ -9,6 +9,7 @@ import dev.slusa.momentum.data.Bucket
 import dev.slusa.momentum.data.Habit
 import dev.slusa.momentum.data.HabitRepository
 import dev.slusa.momentum.data.Recurrence
+import dev.slusa.momentum.data.Reminder
 import dev.slusa.momentum.data.Settings
 import dev.slusa.momentum.data.SettingsStore
 import dev.slusa.momentum.data.Todo
@@ -254,6 +255,14 @@ class MomentumViewModel(
     }
 
     fun endVacation() = viewModelScope.launch { settingsStore.endVacation() }
+
+    fun setMorningReminder(reminder: Reminder) = viewModelScope.launch {
+        settingsStore.setMorning(reminder)
+    }
+
+    fun setAfternoonReminder(reminder: Reminder) = viewModelScope.launch {
+        settingsStore.setAfternoon(reminder)
+    }
 
     fun archiveHabit(habitId: Long, archived: Boolean) = viewModelScope.launch {
         habits.setArchived(habitId, archived)

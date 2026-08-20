@@ -2,6 +2,7 @@ package dev.slusa.momentum.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import dev.slusa.momentum.domain.plural
 
 /**
  * KALENDARZOWA - "10. kazdego miesiaca", termin nie zalezy od tego, kiedy odhaczysz.
@@ -48,14 +49,5 @@ data class Recurrence(
         }
         val base = if (n == 1) "co $noun" else "co $n $noun"
         return if (mode == RecurrenceMode.OD_WYKONANIA) "$base od wykonania" else base
-    }
-
-    companion object {
-        /** Polska odmiana przez liczby: 1 dzien, 2 dni, 5 dni, 22 dni, 12 dni. */
-        private fun plural(n: Int, one: String, few: String, many: String): String = when {
-            n == 1 -> one
-            n % 10 in 2..4 && n % 100 !in 12..14 -> few
-            else -> many
-        }
     }
 }

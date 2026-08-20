@@ -105,10 +105,14 @@ fun MomentumShell(vm: MomentumViewModel) {
     if (showSettings) {
         SettingsScreen(
             vacation = settings.vacation,
+            morning = settings.morning,
+            afternoon = settings.afternoon,
             today = todayState.day,
             onBack = { showSettings = false },
             onStartVacation = vm::startVacation,
             onEndVacation = vm::endVacation,
+            onMorningChange = vm::setMorningReminder,
+            onAfternoonChange = vm::setAfternoonReminder,
         )
         return
     }

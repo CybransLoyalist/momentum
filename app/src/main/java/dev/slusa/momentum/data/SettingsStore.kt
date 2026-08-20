@@ -3,12 +3,14 @@ package dev.slusa.momentum.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.LocalTime
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ustawienia")
 
@@ -25,8 +27,18 @@ data class Vacation(
         !date.isBefore(from) && (until == null || !date.isAfter(until))
 }
 
+/** Jedno z dwoch dziennych przypomnien: wlacznik i godzina, osobno dla kazdego. */
+data class Reminder(
+    val enabled: Boolean,
+    val time: LocalTime,
+)
+
 data class Settings(
     val vacation: Vacation? = null,
+    /** Podsumowanie dnia: ile zadan, ile nawykow, co zalegle. */
+    val morning: Reminder = Reminder(true, LocalTime.of(8, 0)),
+    /** Kopniak: co zostalo otwarte. */
+    val afternoon: Reminder = Reminder(true, LocalTime.of(16, 0)),
 )
 
 class SettingsStore(private val context: Context) {
@@ -35,6 +47,14 @@ class SettingsStore(private val context: Context) {
         val from = prefs[VACATION_FROM]?.let(LocalDate::parse)
         Settings(
             vacation = from?.let { Vacation(it, prefs[VACATION_UNTIL]?.let(LocalDate::parse)) },
+            morning = Reminder(
+                enabled = prefs[MORNING_ON] ?: true,
+                time = prefs[MORNING_AT]?.let(LocalTime::parse) ?: LocalTime.of(8, 0),
+            ),
+            afternoon = Reminder(
+                enabled = prefs[AFTERNOON_ON] ?: true,
+                time = prefs[AFTERNOON_AT]?.let(LocalTime::parse) ?: LocalTime.of(16, 0),
+            ),
         )
     }
 
@@ -52,8 +72,26 @@ class SettingsStore(private val context: Context) {
         }
     }
 
+    suspend fun setMorning(reminder: Reminder) {
+        context.dataStore.edit { prefs ->
+            prefs[MORNING_ON] = reminder.enabled
+            prefs[MORNING_AT] = reminder.time.toString()
+        }
+    }
+
+    suspend fun setAfternoon(reminder: Reminder) {
+        context.dataStore.edit { prefs ->
+            prefs[AFTERNOON_ON] = reminder.enabled
+            prefs[AFTERNOON_AT] = reminder.time.toString()
+        }
+    }
+
     private companion object {
         val VACATION_FROM = stringPreferencesKey("urlop_od")
         val VACATION_UNTIL = stringPreferencesKey("urlop_do")
+        val MORNING_ON = booleanPreferencesKey("rano_wlaczone")
+        val MORNING_AT = stringPreferencesKey("rano_godzina")
+        val AFTERNOON_ON = booleanPreferencesKey("popoludnie_wlaczone")
+        val AFTERNOON_AT = stringPreferencesKey("popoludnie_godzina")
     }
 }
