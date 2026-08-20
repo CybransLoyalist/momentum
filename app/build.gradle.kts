@@ -79,6 +79,7 @@ dependencies {
 
     implementation(libs.work.runtime.ktx)
     implementation(libs.datastore.preferences)
+    implementation(libs.documentfile)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -90,4 +91,5 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

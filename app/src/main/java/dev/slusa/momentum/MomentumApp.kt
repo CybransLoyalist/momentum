@@ -1,6 +1,8 @@
 package dev.slusa.momentum
 
 import android.app.Application
+import dev.slusa.momentum.backup.BackupRepository
+import dev.slusa.momentum.backup.BackupWorker
 import dev.slusa.momentum.data.HabitRepository
 import dev.slusa.momentum.data.MomentumDatabase
 import dev.slusa.momentum.data.SettingsStore
@@ -27,6 +29,8 @@ class MomentumApp : Application() {
 
     val settings: SettingsStore by lazy { SettingsStore(this) }
 
+    val backups: BackupRepository by lazy { BackupRepository(this, db) }
+
     /**
      * Przypomnienia przeplanowuja sie same przy kazdej zmianie ustawien - dzieki temu
      * nie ma osobnej sciezki "zapisz i nie zapomnij przestawic zadania", ktora predzej
@@ -35,6 +39,7 @@ class MomentumApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Reminders.ensureChannel(this)
+        BackupWorker.schedule(this)
 
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             settings.settings

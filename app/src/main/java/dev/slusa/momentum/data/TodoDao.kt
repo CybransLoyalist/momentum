@@ -31,6 +31,16 @@ interface TodoDao {
     )
     fun observeCompletedSince(bucket: Bucket, since: Instant): Flow<List<Todo>>
 
+    /** Wszystko, lacznie z odhaczonym - do kopii zapasowej. */
+    @Query("SELECT * FROM todos")
+    suspend fun all(): List<Todo>
+
+    @Query("DELETE FROM todos")
+    suspend fun deleteAll()
+
+    @Insert
+    suspend fun insertAll(todos: List<Todo>)
+
     @Query("SELECT * FROM todos WHERE id = :id")
     suspend fun byId(id: Long): Todo?
 

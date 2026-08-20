@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 AskForNotifications()
 
                 val vm: MomentumViewModel =
-                    viewModel(factory = MomentumViewModel.factory(app.todos, app.habits, app.settings))
+                    viewModel(factory = MomentumViewModel.factory(app.todos, app.habits, app.settings, app.backups))
                 MomentumShell(vm)
             }
         }

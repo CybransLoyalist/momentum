@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import android.net.Uri
+import dev.slusa.momentum.backup.BackupRepository
 import dev.slusa.momentum.data.Bucket
 import dev.slusa.momentum.data.Habit
 import dev.slusa.momentum.data.HabitRepository
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -75,7 +78,15 @@ class MomentumViewModel(
     private val todos: TodoRepository,
     private val habits: HabitRepository,
     private val settingsStore: SettingsStore,
+    private val backups: BackupRepository,
 ) : ViewModel() {
+
+    /**
+     * Ostatni komunikat o kopii zapasowej. Kopia jest operacja, ktorej efektu nie
+     * widac w aplikacji - bez potwierdzenia z nazwa pliku nie wiadomo, czy cokolwiek
+     * sie stalo, a to jest dokladnie ta funkcja, ktorej trzeba ufac.
+     */
+    val backupMessage: MutableStateFlow<String?> = MutableStateFlow(null)
 
     val settings: StateFlow<Settings> = settingsStore.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
@@ -264,6 +275,40 @@ class MomentumViewModel(
         settingsStore.setAfternoon(reminder)
     }
 
+    // --- kopia zapasowa ---
+
+    fun setBackupFolder(uri: String?) = viewModelScope.launch {
+        settingsStore.setBackupFolder(uri)
+        backupMessage.value = if (uri == null) null else "Folder ustawiony."
+    }
+
+    fun backupNow() = viewModelScope.launch {
+        val folder = settingsStore.settings.first().backupFolder
+        if (folder == null) {
+            backupMessage.value = "Najpierw wskaż folder na kopie."
+            return@launch
+        }
+
+        val name = backups.writeTo(Uri.parse(folder), today.value)
+        if (name == null) {
+            backupMessage.value = "Nie udało się zapisać. Wskaż folder jeszcze raz."
+        } else {
+            settingsStore.setLastBackup(today.value)
+            backupMessage.value = "Zapisane: $name"
+        }
+    }
+
+    fun restoreFrom(uri: Uri) = viewModelScope.launch {
+        val data = backups.readFrom(uri)
+        if (data == null) {
+            backupMessage.value = "To nie wygląda na kopię Momentum."
+            return@launch
+        }
+
+        backups.restore(data)
+        backupMessage.value = "Wczytane: ${data.todos.size} zadań, ${data.habits.size} nawyków."
+    }
+
     fun archiveHabit(habitId: Long, archived: Boolean) = viewModelScope.launch {
         habits.setArchived(habitId, archived)
     }
@@ -275,8 +320,9 @@ class MomentumViewModel(
             todos: TodoRepository,
             habits: HabitRepository,
             settings: SettingsStore,
+            backups: BackupRepository,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { MomentumViewModel(todos, habits, settings) }
+            initializer { MomentumViewModel(todos, habits, settings, backups) }
         }
     }
 }

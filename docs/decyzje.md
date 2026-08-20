@@ -11,6 +11,53 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Przypomnienia jako łańcuch zadań jednorazowych
+
+WorkManager nie ma zadania cyklicznego o konkretnej godzinie — okresowe potrafi odpalić się
+kiedykolwiek w swoim oknie, co przy „podsumowaniu o ósmej" jest bezużyteczne. Każde przypomnienie
+jest więc zadaniem jednorazowym z opóźnieniem do najbliższej pory, a po wykonaniu planuje samo
+siebie na jutro.
+
+Przeplanowanie idzie w bloku `finally`. Gdyby zostało pominięte przy jakimkolwiek wyjątku,
+łańcuch urwałby się bez śladu i po tygodniu wyglądałoby to na zepsutą funkcję, a nie na jeden
+nieudany poranek.
+
+Kolejka WorkManagera przeżywa restart telefonu, więc nie ma własnego odbiornika na start systemu.
+Przypomnienia przeplanowują się też same przy każdej zmianie ustawień — inaczej istniałaby osobna
+ścieżka „zapisz i nie zapomnij przestawić zadania", którą prędzej czy później ktoś by ominął.
+
+**Ślad:** `notifications/Reminders.kt`, `ReminderWorker`.
+
+## 2026-08-20 · Powiadomienie jest grupą, nie jedną listą
+
+Odhaczanie prosto z rozwiniętego powiadomienia jest tu całym sensem, a Android daje najwyżej
+trzy przyciski na jedno powiadomienie. Jedno powiadomienie z listą w środku pozwoliłoby więc
+odhaczyć trzy rzeczy z sześciu. Stąd grupa: podsumowanie plus po jednym kafelku na rzecz,
+każdy z własnym „Zrobione".
+
+Popołudniowy kopniak przy pustej liście nie przychodzi — byłoby to powiadomienie o niczym.
+Poranne podsumowanie przychodzi także puste, bo „dzisiaj czysto" to informacja, na którą się
+czeka.
+
+**Ślad:** `notifications/Notifications.kt`.
+
+## 2026-08-20 · Kopia zapasowa do folderu wskazanego przez ciebie, nie do katalogu aplikacji
+
+Katalog własny aplikacji byłby prostszy, ale od Androida 11 nie da się do niego zajrzeć
+menedżerem plików — czyli kopia znów byłaby niewidzialna, a to dokładnie ta cecha, którą Auto
+Backup już ma i której nam nie wystarcza. Folder wskazuje się raz przez systemowy wybór katalogu,
+uprawnienie jest utrwalane, nocne zadanie pisze tam plik na dzień.
+
+Karta w ustawieniach pokazuje **datę ostatniej udanej kopii**. To jedyna rzecz, która odróżnia
+działającą kopię od wyłączonej, a bez niej „mam backup" jest wiarą, nie wiedzą.
+
+Format pisany jest ręcznie, bez biblioteki do serializacji. Biblioteka związałaby zawartość pliku
+z nazwami pól w kodzie i zmiana nazwy kolumny cicho psułaby stare kopie. Tu format jest jawny,
+a brakujące pola wczytują się na wartościach domyślnych zamiast wywalać całość — kopia sprzed
+dwóch wersji ma się dać wczytać.
+
+**Ślad:** `backup/BackupFormat.kt`, `BackupRepository`, `BackupWorker`.
+
 ## 2026-08-20 · Kotwica dnia miesiąca przesuwa pierwszy termin
 
 „Co miesiąc, 15." zapisane z domyślną datą wypadało **jutro**, a dopiero kolejny cykl trafiał na

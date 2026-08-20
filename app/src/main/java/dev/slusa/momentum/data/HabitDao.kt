@@ -25,6 +25,25 @@ interface HabitDao {
     @Query("SELECT * FROM habit_completions WHERE date >= :since")
     fun observeCompletionsSince(since: LocalDate): Flow<List<HabitCompletion>>
 
+    /** Do kopii zapasowej - takze zarchiwizowane i cala historia. */
+    @Query("SELECT * FROM habits")
+    suspend fun allHabits(): List<Habit>
+
+    @Query("SELECT * FROM habit_completions")
+    suspend fun allCompletions(): List<HabitCompletion>
+
+    @Query("DELETE FROM habits")
+    suspend fun deleteAllHabits()
+
+    @Query("DELETE FROM habit_completions")
+    suspend fun deleteAllCompletions()
+
+    @Insert
+    suspend fun insertHabits(habits: List<Habit>)
+
+    @Insert
+    suspend fun insertCompletions(completions: List<HabitCompletion>)
+
     @Insert
     suspend fun insert(habit: Habit): Long
 

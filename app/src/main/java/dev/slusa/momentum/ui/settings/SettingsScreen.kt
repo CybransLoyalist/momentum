@@ -2,7 +2,9 @@ package dev.slusa.momentum.ui.settings
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -75,6 +77,12 @@ fun SettingsScreen(
     onEndVacation: () -> Unit,
     onMorningChange: (Reminder) -> Unit,
     onAfternoonChange: (Reminder) -> Unit,
+    backupFolder: String?,
+    lastBackup: LocalDate?,
+    backupMessage: String?,
+    onPickBackupFolder: (String) -> Unit,
+    onBackupNow: () -> Unit,
+    onRestore: (Uri) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pickingReturn by remember { mutableStateOf(false) }
@@ -103,6 +111,51 @@ fun SettingsScreen(
     val askPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> notificationsAllowed = granted }
+
+    // Uprawnienie do folderu trzeba utrwalic od razu, inaczej przepada po restarcie
+    // i nocna kopia po cichu przestaje dzialac.
+    val pickFolder = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }
+            onPickBackupFolder(uri.toString())
+        }
+    }
+
+    var restoreFrom by remember { mutableStateOf<Uri?>(null) }
+    val pickBackupFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) restoreFrom = uri }
+
+    restoreFrom?.let { uri ->
+        AlertDialog(
+            onDismissRequest = { restoreFrom = null },
+            title = { Text("Wczytać kopię?") },
+            text = {
+                Text(
+                    "Wszystkie obecne zadania, nawyki i historia zostaną zastąpione tym, " +
+                        "co jest w pliku. Tego nie da się cofnąć."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onRestore(uri)
+                        restoreFrom = null
+                    }
+                ) { Text("Zastąp dane") }
+            },
+            dismissButton = {
+                TextButton(onClick = { restoreFrom = null }) { Text("Anuluj") }
+            },
+        )
+    }
 
     if (pickingReturn) {
         PickDateDialog(
@@ -200,6 +253,17 @@ fun SettingsScreen(
                         onSecondary = { PowerSaving.openAppSettings(context) },
                     )
                 }
+            }
+
+            item {
+                BackupCard(
+                    folder = backupFolder,
+                    lastBackup = lastBackup,
+                    message = backupMessage,
+                    onPickFolder = { pickFolder.launch(null) },
+                    onBackupNow = onBackupNow,
+                    onRestore = { pickBackupFile.launch(arrayOf("*/*")) },
+                )
             }
 
             item {
@@ -302,6 +366,81 @@ private fun WarningCard(
                         Text(secondary, color = scheme.onErrorContainer)
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Kopia jako plik, ktory widac. Android Auto Backup dziala rownolegle i jest
+ * bezobslugowy, ale nie da sie go podejrzec ani cofnac do stanu sprzed tygodnia -
+ * to nie sa alternatywy. Data ostatniej kopii jest tu najwazniejsza: bez niej nie
+ * wiadomo, czy cokolwiek sie dzieje.
+ */
+@Composable
+private fun BackupCard(
+    folder: String?,
+    lastBackup: LocalDate?,
+    message: String?,
+    onPickFolder: () -> Unit,
+    onBackupNow: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = scheme.surface,
+        border = BorderStroke(1.dp, scheme.outline),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = "Kopia zapasowa",
+                style = MaterialTheme.typography.titleMedium,
+                color = scheme.onSurface,
+            )
+            Text(
+                text = "Plik JSON w wybranym folderze, zapisywany co noc. " +
+                    "Ostatnich czternaście kopii zostaje, starsze same się kasują.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            Text(
+                text = when {
+                    folder == null -> "Folder nie jest wybrany — automatyczna kopia nie działa."
+                    lastBackup == null -> "Jeszcze nie było kopii."
+                    else -> "Ostatnia kopia: ${lastBackup.format(DATE_FORMAT)}"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = if (folder == null) scheme.error else scheme.primary,
+            )
+
+            if (message != null) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+
+            Row {
+                TextButton(onClick = onPickFolder, contentPadding = PaddingValues(0.dp)) {
+                    Text(if (folder == null) "Wskaż folder" else "Zmień folder")
+                }
+                Spacer(Modifier.padding(horizontal = 8.dp))
+                TextButton(
+                    onClick = onBackupNow,
+                    enabled = folder != null,
+                    contentPadding = PaddingValues(0.dp),
+                ) { Text("Zapisz teraz") }
+            }
+
+            TextButton(onClick = onRestore, contentPadding = PaddingValues(0.dp)) {
+                Text("Wczytaj kopię…", color = scheme.error)
             }
         }
     }

@@ -83,6 +83,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     val todayHabits by vm.todayHabits.collectAsStateWithLifecycle()
     val allHabits by vm.habitsState.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
+    val backupMessage by vm.backupMessage.collectAsStateWithLifecycle()
 
     editorTarget?.let { target ->
         TaskEditorScreen(
@@ -113,6 +114,12 @@ fun MomentumShell(vm: MomentumViewModel) {
             onEndVacation = vm::endVacation,
             onMorningChange = vm::setMorningReminder,
             onAfternoonChange = vm::setAfternoonReminder,
+            backupFolder = settings.backupFolder,
+            lastBackup = settings.lastBackup,
+            backupMessage = backupMessage,
+            onPickBackupFolder = vm::setBackupFolder,
+            onBackupNow = vm::backupNow,
+            onRestore = vm::restoreFrom,
         )
         return
     }

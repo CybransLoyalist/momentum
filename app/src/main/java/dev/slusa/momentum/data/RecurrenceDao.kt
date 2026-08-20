@@ -16,6 +16,15 @@ interface RecurrenceDao {
     @Query("SELECT * FROM recurrences")
     fun observeAll(): Flow<List<Recurrence>>
 
+    @Query("SELECT * FROM recurrences")
+    suspend fun all(): List<Recurrence>
+
+    @Query("DELETE FROM recurrences")
+    suspend fun deleteAll()
+
+    @Insert
+    suspend fun insertAll(rules: List<Recurrence>)
+
     @Query("SELECT * FROM recurrences WHERE id = :id")
     suspend fun byId(id: Long): Recurrence?
 

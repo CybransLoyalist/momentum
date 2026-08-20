@@ -39,6 +39,10 @@ data class Settings(
     val morning: Reminder = Reminder(true, LocalTime.of(8, 0)),
     /** Kopniak: co zostalo otwarte. */
     val afternoon: Reminder = Reminder(true, LocalTime.of(16, 0)),
+    /** Folder na automatyczne kopie, wybrany raz przez systemowy wybor katalogu. */
+    val backupFolder: String? = null,
+    /** Dzien ostatniej udanej kopii - jedyny sposob, zeby zobaczyc, ze dziala. */
+    val lastBackup: LocalDate? = null,
 )
 
 class SettingsStore(private val context: Context) {
@@ -55,6 +59,8 @@ class SettingsStore(private val context: Context) {
                 enabled = prefs[AFTERNOON_ON] ?: true,
                 time = prefs[AFTERNOON_AT]?.let(LocalTime::parse) ?: LocalTime.of(16, 0),
             ),
+            backupFolder = prefs[BACKUP_FOLDER],
+            lastBackup = prefs[LAST_BACKUP]?.let(LocalDate::parse),
         )
     }
 
@@ -86,6 +92,16 @@ class SettingsStore(private val context: Context) {
         }
     }
 
+    suspend fun setBackupFolder(uri: String?) {
+        context.dataStore.edit { prefs ->
+            if (uri == null) prefs.remove(BACKUP_FOLDER) else prefs[BACKUP_FOLDER] = uri
+        }
+    }
+
+    suspend fun setLastBackup(date: LocalDate) {
+        context.dataStore.edit { prefs -> prefs[LAST_BACKUP] = date.toString() }
+    }
+
     private companion object {
         val VACATION_FROM = stringPreferencesKey("urlop_od")
         val VACATION_UNTIL = stringPreferencesKey("urlop_do")
@@ -93,5 +109,7 @@ class SettingsStore(private val context: Context) {
         val MORNING_AT = stringPreferencesKey("rano_godzina")
         val AFTERNOON_ON = booleanPreferencesKey("popoludnie_wlaczone")
         val AFTERNOON_AT = stringPreferencesKey("popoludnie_godzina")
+        val BACKUP_FOLDER = stringPreferencesKey("kopie_folder")
+        val LAST_BACKUP = stringPreferencesKey("kopie_ostatnia")
     }
 }
