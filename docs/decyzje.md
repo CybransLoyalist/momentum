@@ -11,6 +11,32 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Most głosowy odłożony, bo Google żąda własnej strony
+
+Przejście projektu OAuth na produkcję okazało się wymagać **adresu strony domowej i polityki
+prywatności** — konsola blokuje przycisk publikacji, dopóki obu nie ma. A skoro adres URL pociąga
+za sobą wpisanie domeny do autoryzowanych, trzeba by ją jeszcze zweryfikować w Search Console,
+czyli faktycznie założyć i utrzymywać stronę internetową.
+
+Bez produkcji zostaje status „Testowanie", w którym **zgoda wygasa co siedem dni**. Aplikacja,
+która ma działać sama, wymagałaby cotygodniowego logowania — to nie jest kompromis, tylko powolne
+porzucenie funkcji.
+
+Cena wyszła więc dużo wyżej niż zakładał spec: własna strona plus weryfikacja domeny, za możliwość
+dyktowania zadań przez jedną osobę. **Odłożone.**
+
+Zamiast tego wystarcza rzecz, która działa bez żadnej konfiguracji: „przypomnij mi jutro o
+dziewiątej, żeby iść do dentysty". Gemini zapisuje to w Google Tasks razem z terminem i telefon
+sam się upomina; wpis przenosi się potem do Momentum ręcznie. To ta sama rura, tylko opróżniana
+ręcznie zamiast automatycznie — więc gdyby kiedyś ręczne przepisywanie zaczęło uwierać, wracamy
+dokładnie tu, a projekt w Google Cloud czeka skonfigurowany do połowy.
+
+Kod routingu słów kluczowych został usunięty, bo karta w ustawieniach dla funkcji, której nie ma,
+myli bardziej, niż pomaga. [`google-cloud.md`](google-cloud.md) **zostaje** razem z wszystkimi
+pułapkami, na które wpadliśmy — jeśli kiedyś wrócimy, godzina klikania nie zacznie się od zera.
+
+**Ślad:** `docs/google-cloud.md`, spec sekcja 08 nadal opisuje docelowy kształt.
+
 ## 2026-08-20 · Most głosowy przez Google Tasks mimo AppFunctions
 
 Pytanie „czy nie ma innej drogi niż Ok Google" wymusiło przegląd, bo krajobraz zmienił się
@@ -36,10 +62,9 @@ Wzorzec jest znajomy: App Actions też zostały otwarte dla wszystkich, potem za
 potem wygaszone. Aplikacja spoza sklepu, na jednego użytkownika, jest dokładnie tym, co przy
 zawężaniu odpada pierwsze.
 
-**Decyzja: budujemy most przez Google Tasks**, bo to jedyna rzecz dająca dyktowanie bez rąk dziś,
-a test na telefonie potwierdził, że rura działa. Warstwa importu — rozpoznawanie słów, routing na
-listy, odsiewanie duplikatów — jest oddzielona od źródła, więc gdyby AppFunctions kiedyś się
-otworzyły, dopisujemy je jako drugie wejście do tej samej warstwy. To nie kosztuje nic teraz.
+Decyzja z tego dnia — budujemy most przez Google Tasks — **została odwrócona jeszcze tego samego
+dnia**, gdy wyszedł koszt konfiguracji. Patrz wpis „Most głosowy odłożony" wyżej. Sam przegląd
+alternatyw zostaje w mocy: Bixby i rutyny Samsunga nadal odpadają z tych samych powodów.
 
 Odrzucony po drodze **widżet z mikrofonem**, mimo że spec trzymał go jako plan awaryjny: skoro
 i tak trzeba dotknąć telefonu, oszczędza dwie sekundy względem otwarcia aplikacji. Cała wartość
@@ -47,7 +72,9 @@ mostu jest w tym, że ręce są zajęte.
 
 **Ślad:** `docs/google-cloud.md`, `domain/Routing.kt`.
 
-## 2026-08-20 · Słowo kluczowe zakupów liczy się tylko na początku
+## 2026-08-20 · Słowo kluczowe zakupów liczy się tylko na początku (kod wycofany)
+
+> Ustalenie zostaje na przyszłość, ale sam kod został usunięty razem z odłożeniem mostu.
 
 Szukanie słowa w całym tekście wyglądało kusząco i jest błędem: „zadzwonić do Ani, żeby kupiła
 mleko" to zadanie, a nie pozycja na liście zakupów. Liczy się wyłącznie pierwsze słowo — dzięki

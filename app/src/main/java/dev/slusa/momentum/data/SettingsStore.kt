@@ -9,7 +9,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import dev.slusa.momentum.domain.Routing
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -44,8 +43,6 @@ data class Settings(
     val backupFolder: String? = null,
     /** Dzien ostatniej udanej kopii - jedyny sposob, zeby zobaczyc, ze dziala. */
     val lastBackup: LocalDate? = null,
-    /** Slowa, po ktorych podyktowana rzecz trafia na liste zakupow zamiast na glowna. */
-    val shoppingKeywords: List<String> = Routing.DEFAULT_KEYWORDS,
 )
 
 class SettingsStore(private val context: Context) {
@@ -64,7 +61,6 @@ class SettingsStore(private val context: Context) {
             ),
             backupFolder = prefs[BACKUP_FOLDER],
             lastBackup = prefs[LAST_BACKUP]?.let(LocalDate::parse),
-            shoppingKeywords = Routing.parseKeywords(prefs[SHOPPING_KEYWORDS]),
         )
     }
 
@@ -106,11 +102,6 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { prefs -> prefs[LAST_BACKUP] = date.toString() }
     }
 
-    /** Puste pole znaczy "domyslne", a nie "nie rozpoznawaj nic" - patrz [Routing]. */
-    suspend fun setShoppingKeywords(text: String) {
-        context.dataStore.edit { prefs -> prefs[SHOPPING_KEYWORDS] = text }
-    }
-
     private companion object {
         val VACATION_FROM = stringPreferencesKey("urlop_od")
         val VACATION_UNTIL = stringPreferencesKey("urlop_do")
@@ -120,6 +111,5 @@ class SettingsStore(private val context: Context) {
         val AFTERNOON_AT = stringPreferencesKey("popoludnie_godzina")
         val BACKUP_FOLDER = stringPreferencesKey("kopie_folder")
         val LAST_BACKUP = stringPreferencesKey("kopie_ostatnia")
-        val SHOPPING_KEYWORDS = stringPreferencesKey("slowa_zakupy")
     }
 }
