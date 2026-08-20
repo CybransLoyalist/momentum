@@ -40,9 +40,12 @@ private val DarkScheme = darkColorScheme(
     outlineVariant = OutlineDark,
 )
 
-/** Rampa starzenia nie miesci sie w schemacie Material3, wiec jedzie osobnym kanalem. */
+/** Rampy nie mieszcza sie w schemacie Material3, wiec jada osobnym kanalem. */
 val LocalAgeRamp: ProvidableCompositionLocal<List<Color>> =
     staticCompositionLocalOf { AgeRamp.light }
+
+val LocalDoneRamp: ProvidableCompositionLocal<List<Color>> =
+    staticCompositionLocalOf { DoneRamp.light }
 
 @Composable
 fun MomentumTheme(
@@ -51,8 +54,12 @@ fun MomentumTheme(
 ) {
     val scheme = if (darkTheme) DarkScheme else LightScheme
     val ramp = if (darkTheme) AgeRamp.dark else AgeRamp.light
+    val doneRamp = if (darkTheme) DoneRamp.dark else DoneRamp.light
 
-    CompositionLocalProvider(LocalAgeRamp provides ramp) {
+    CompositionLocalProvider(
+        LocalAgeRamp provides ramp,
+        LocalDoneRamp provides doneRamp,
+    ) {
         MaterialTheme(
             colorScheme = scheme,
             typography = MomentumTypography,

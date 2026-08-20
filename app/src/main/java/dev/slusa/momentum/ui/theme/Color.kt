@@ -53,3 +53,33 @@ object AgeRamp {
         Color(0xFF0B0A0B),
     )
 }
+
+/**
+ * Rampa dziennego dorobku: nic zrobione -> dzien udany. Odwrotnie niz [AgeRamp], bo
+ * mierzy przyrost, a nie gnicie.
+ *
+ * Dolny koniec jest ciemnoszary, a nie czarny. Czern zarezerwowana jest dla zaleglosci
+ * i banner witajacy czernia o siodmej rano bylby oskarzeniem, zanim dzien sie zaczal -
+ * czyli dokladnie ta pulapka, w ktora wpadl pasek starzenia.
+ *
+ * Gorny koniec spotyka sie z pierwszym przystankiem [AgeRamp]: "swieze" i "zrobione"
+ * to ten sam kolor, bo to ta sama dobra wiadomosc.
+ */
+object DoneRamp {
+    /** Ile rzeczy dziennie daje pelna zielen. */
+    const val TARGET = 5
+
+    val light = listOf(
+        Color(0xFF4A5560),
+        Color(0xFF45766A),
+        Color(0xFF3A9078),
+        Color(0xFF2E9B86),
+    )
+
+    val dark = listOf(
+        Color(0xFF5A6672),
+        Color(0xFF4E8478),
+        Color(0xFF43A78D),
+        Color(0xFF45B8A0),
+    )
+}

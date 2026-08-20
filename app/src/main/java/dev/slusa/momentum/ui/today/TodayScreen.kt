@@ -30,10 +30,13 @@ import dev.slusa.momentum.ui.components.Banner
 import dev.slusa.momentum.ui.components.CollapsibleHeader
 import dev.slusa.momentum.ui.components.EmptyState
 import dev.slusa.momentum.ui.components.HabitRow
+import dev.slusa.momentum.ui.components.ProgressBanner
 import dev.slusa.momentum.ui.components.ScreenHeader
 import dev.slusa.momentum.ui.components.SectionHeader
 import dev.slusa.momentum.ui.components.TodayChip
 import dev.slusa.momentum.ui.components.TodoRow
+import dev.slusa.momentum.ui.theme.DoneRamp
+import dev.slusa.momentum.ui.theme.LocalDoneRamp
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -119,6 +122,14 @@ fun TodayScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            item(key = "dorobek") {
+                ProgressBanner(
+                    done = state.doneToday + doneHabits.size,
+                    target = DoneRamp.TARGET,
+                    ramp = LocalDoneRamp.current,
+                )
+            }
+
             if (vacationActive) {
                 item(key = "urlop") {
                     Banner("Tryb urlopowy — nawyki wstrzymane", onOpenSettings)

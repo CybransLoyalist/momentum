@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.ZoneId
 
 data class TodoUi(
     val todo: Todo,
@@ -42,6 +43,8 @@ data class TodoUi(
     val rule: Recurrence? = null,
     /** Termin jeszcze przed nami - rozstrzyga, ktore akcje maja sens w arkuszu. */
     val hasFutureDate: Boolean = false,
+    /** Czy kafelek ma pokazywac plame starzenia. Tylko lista ToDo, nie Kiedys i nie zakupy. */
+    val ages: Boolean = false,
 )
 
 data class HabitUi(
@@ -59,6 +62,11 @@ data class TodayUiState(
     val markedToday: List<TodoUi> = emptyList(),
     val general: List<TodoUi> = emptyList(),
     val done: List<TodoUi> = emptyList(),
+    /**
+     * Odhaczone **dzisiaj**, a nie w ostatniej dobie. Sekcja "Zrobione" zostaje na oknie
+     * doby, bo to okno cofniecia pomylki, ale licznik dnia ma liczyc dzien.
+     */
+    val doneToday: Int = 0,
 ) {
     val todayCount: Int get() = withDate.size + markedToday.size
     val isEmpty: Boolean get() = todayCount == 0 && general.isEmpty()
@@ -120,16 +128,24 @@ class MomentumViewModel(
         ) { open, done, rules ->
             val byId = rules.associateBy { it.id }
             fun onToday(t: Todo) = t.plannedDate != null && !t.plannedDate.isAfter(day)
+
+            // Rzecz bez terminu starzeje sie od dnia dopisania. Lista ogolna to rzeczy
+            // na najblizsze dni, a nie na kiedys - wiec tez ma gnic i tym samym tempem,
+            // zeby przypominac o przelozeniu jej na dzisiaj.
+            fun since(t: Todo) =
+                t.plannedDate ?: t.createdAt.atZone(ZoneId.systemDefault()).toLocalDate()
+
             // Zadania cykliczne starzeja sie tak samo jak reszta - zalegly czynsz ma
             // czerniec, bo inaczej nic nie sygnalizuje spoznienia. Nie starzeja sie
             // wylacznie nawyki, ktore faktycznie resetuja sie co dobe.
             fun map(list: List<Todo>) = list.map {
                 TodoUi(
                     todo = it,
-                    ageDays = Aging.ageDays(it.plannedDate, day),
+                    ageDays = Aging.ageDays(since(it), day),
                     onTodayList = onToday(it),
                     rule = it.recurrenceId?.let(byId::get),
                     hasFutureDate = it.plannedDate?.isAfter(day) == true,
+                    ages = true,
                 )
             }
 
@@ -139,6 +155,9 @@ class MomentumViewModel(
                 markedToday = map(open.filter { onToday(it) && !it.fromSchedule }),
                 general = map(open.filter { it.plannedDate == null }),
                 done = map(done),
+                doneToday = done.count {
+                    it.completedAt?.atZone(ZoneId.systemDefault())?.toLocalDate() == day
+                },
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())

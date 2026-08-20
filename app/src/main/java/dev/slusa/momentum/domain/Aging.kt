@@ -2,6 +2,7 @@ package dev.slusa.momentum.domain
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.floor
@@ -35,3 +36,13 @@ object Aging {
         return lerp(ramp[lower], ramp[lower + 1], position - lower)
     }
 }
+
+/**
+ * Czarny albo bialy tekst na podanym tle, zaleznie od tego, ktory bedzie czytelny.
+ *
+ * Potrzebne wszedzie tam, gdzie tlo jedzie po rampie kolorow: to samo pole bywa
+ * jasnozielone i prawie czarne, wiec kolor tekstu wpisany na sztywno musialby przegrac
+ * na jednym koncu skali.
+ */
+fun contrastOn(background: Color): Color =
+    if (background.luminance() > 0.45f) Color(0xFF141920) else Color.White

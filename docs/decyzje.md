@@ -11,6 +11,38 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Kara ma teraz parę w nagrodzie
+
+Lista ToDo miała wyłącznie mechanizm kary. Pasek gnicia ciemnieje, gdy czegoś nie robisz,
+i nie daje **nic**, gdy robisz — rzecz po prostu znika. To jest dokładna odwrotność asymetrii,
+którą świadomie wpisaliśmy w momentum nawyków („nadprogramowa robota ma się opłacać”, „dzisiejszy
+brak odhaczenia nie jest jeszcze karą”).
+
+Trzy zmiany, wszystkie w tę samą stronę:
+
+**Plama zamiast paska.** Kolor idzie od lewej krawędzi pod kółko odhaczania i gaśnie przed
+tytułem. Wąski pasek przy samej krawędzi był na tyle dyskretny, że dawał się ignorować kątem oka
+aż do skutku — czyli nie robił tego, po co powstał. Gradient, a nie równy blok, bo pełny prostokąt
+na każdym starym zadaniu zamieniłby listę w ścianę czerni. Obwódka kółka dostosowuje jasność do
+tego, na czym stoi, bo na ciemnej plamie szary kontur znikał razem z celem, w który trzeba trafić.
+
+**Rzeczy bez terminu też gniją**, od dnia dopisania i tym samym tempem. Rozważaliśmy dłuższy próg
+dla listy ogólnej, ale ona nie jest listą „na kiedyś” — od tego jest osobna zakładka. To rzeczy
+na najbliższe dni, więc mają uwierać w tym samym tempie i popychać do przełożenia na dzisiaj.
+
+**Licznik „Dziś zrobione”** na górze, z tłem po odwróconej rampie: ciemnoszary przy zerze, zielony
+przy pięciu. Liczy zadania i nawyki razem, bo to jeden dzień, a nie dwie konkurencje.
+
+Dolny koniec jest ciemnoszary, a **nie czarny**, świadomie. Czerń jest zarezerwowana dla
+zaległości, a banner witający czernią o siódmej rano byłby oskarżeniem, zanim dzień się zaczął —
+czyli tą samą pułapką, w którą wpadł pasek starzenia. Górny koniec spotyka się z pierwszym
+przystankiem rampy wieku: „świeże” i „zrobione” to ten sam kolor, bo to ta sama dobra wiadomość.
+
+Licznik liczy odhaczenia z **dzisiaj**, nie z ostatniej doby. Sekcja „Zrobione” zostaje na oknie
+doby, bo to okno cofnięcia pomyłki, ale licznik dnia ma liczyć dzień, nie wczorajszy wieczór.
+
+**Ślad:** `ui/components/TodoRow.kt`, `ListChrome.ProgressBanner`, `theme/DoneRamp`.
+
 ## 2026-08-20 · Paleta na niebiesko, rampa starzenia zostaje ciepła
 
 Akcent aplikacji przeszedł z głębokiej zieleni na głęboki błękit, razem z neutralnymi, które

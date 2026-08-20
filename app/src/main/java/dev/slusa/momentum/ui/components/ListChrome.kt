@@ -1,5 +1,6 @@
 package dev.slusa.momentum.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +37,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.slusa.momentum.domain.Aging
+import dev.slusa.momentum.domain.contrastOn
 import java.util.Locale
 
 @Composable
@@ -252,5 +256,47 @@ fun Chip(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+/**
+ * Licznik dziennego dorobku. Tlo jedzie po [dev.slusa.momentum.ui.theme.DoneRamp]:
+ * ciemnoszare przy zerze, zielone przy dniu udanym.
+ *
+ * To odwrotnosc paska starzenia i tak ma byc - lista miala dotad wylacznie mechanizm
+ * kary, ktory ciemnieje, gdy nie robisz, i nie dawal nic, gdy robisz. Ten pasek jest
+ * druga polowa tej samej pary.
+ */
+@Composable
+fun ProgressBanner(done: Int, target: Int, ramp: List<Color>) {
+    val background by animateColorAsState(
+        targetValue = Aging.color(done, ramp, target),
+        label = "dorobek dnia",
+    )
+    val ink = contrastOn(background)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        shape = RoundedCornerShape(10.dp),
+        color = background,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Dziś zrobione",
+                style = MaterialTheme.typography.bodyMedium,
+                color = ink,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = done.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                color = ink,
+            )
+        }
     }
 }

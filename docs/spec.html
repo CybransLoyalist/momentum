@@ -525,7 +525,7 @@ footer{
 
 <section>
   <h2><span class="num">02</span>Starzenie się zadań</h2>
-  <p class="lede">Im dłużej coś wisi na liście „na dzisiaj”, tym bardziej gnije wizualnie. Kolor niesie kolorowy pasek przy lewej krawędzi kafelka, nie całe tło — sygnał jest tak samo czytelny, a lista po tygodniu marnego humoru nie zamienia się w ścianę czerni.</p>
+  <p class="lede">Im dłużej coś wisi na liście ToDo, tym bardziej gnije wizualnie. Kolor wchodzi od lewej krawędzi kafelka jako plama, która przechodzi pod kółkiem odhaczania i gaśnie przed tytułem — wąski pasek przy samej krawędzi dawał się ignorować kątem oka aż do skutku. Gradient zamiast równego bloku, żeby lista po tygodniu marnego humoru nie zamieniła się w ścianę czerni.</p>
 
   <div class="aging">
     <div class="chip" style="--c:var(--age-0)"><span class="d">dzień 0</span><span class="l">świeże</span></div>
@@ -538,7 +538,9 @@ footer{
 
   <ul>
     <li>Wiek liczy się od <code>plannedDate</code>, czyli od dnia, w którym rzecz trafiła na listę — nie od daty utworzenia. Zadanie zaplanowane na 5 listopada jest 5 listopada zielone, a nie „ma trzy tygodnie”. Osobne pole na to okazało się zbędne: rollover zostawia datę nietkniętą, a każde świadome działanie — zdjęcie z dzisiaj, przełożenie terminu — ma wiek zresetować, co dzieje się samo przez nadpisanie tego pola.</li>
+    <li>Rzecz <strong>bez terminu</strong> starzeje się od dnia dopisania i tym samym tempem. Lista ogólna to rzeczy na najbliższe dni, a nie na kiedyś — od odkładania w nieskończoność jest osobna zakładka. Ciemniejący kafelek przypomina, żeby przełożyć rzecz na dzisiaj albo świadomie zesłać ją do „Kiedyś”.</li>
     <li>Próg pełnej czerni domyślnie <strong>7 dni</strong>, zmienny w ustawieniach. Kolory pomiędzy interpolowane płynnie.</li>
+    <li><strong>Kara ma parę w nagrodzie.</strong> Na górze listy ToDo siedzi licznik „Dziś zrobione” z tłem idącym po odwróconej rampie — ciemnoszarym przy zerze, zielonym przy pięciu odhaczonych. Liczy zadania i nawyki razem. Sam pasek gnicia był mechanizmem, który ciemnieje, gdy nie robisz, i nie daje nic, gdy robisz; ta asymetria jest odwrotnością tej, którą świadomie wpisaliśmy w momentum.</li>
     <li><strong>Nawyki nie starzeją się</strong> — one z definicji wracają jutro, a niezrobiony wtorek nie czeka, tylko przepada. Zadania cykliczne starzeją się normalnie: zaległa instancja nie wraca jutro, to wciąż ta sama i jedyna instancja — patrz sekcja 05.</li>
     <li>Odznaczenie „na dzisiaj” i zaznaczenie ponownie kasuje wiek. To furtka do oszukiwania samej siebie, ale to twoja apka.</li>
   </ul>

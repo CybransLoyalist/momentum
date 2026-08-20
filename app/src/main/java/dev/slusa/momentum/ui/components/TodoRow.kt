@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,17 +28,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.domain.Aging
+import dev.slusa.momentum.domain.contrastOn
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.theme.LocalAgeRamp
 
+/** Dokad siega plama starzenia - musi przykryc kolko odhaczania i zgasnac przed tytulem. */
+private val STAIN_WIDTH = 76.dp
+
 /**
- * Kafelek zadania, wspolny dla wszystkich list. Pasek starzenia jest waski i przy
- * lewej krawedzi - kolor ma byc sygnalem, ktory da sie zignorowac katem oka,
- * a nie krzykiem na pol ekranu.
+ * Kafelek zadania, wspolny dla wszystkich list.
+ *
+ * Kolor starzenia idzie od lewej krawedzi jako plama gasnaca w prawo, przechodzac pod
+ * kolkiem odhaczania. Waski pasek przy samej krawedzi byl zbyt dyskretny - dawal sie
+ * zignorowac katem oka az do skutku. Gradient zamiast rownego bloku, bo pelny prostokat
+ * na kazdym starym zadaniu robilby z listy sciane czerni, przed czym broni sie spec.
  */
 @Composable
 fun TodoRow(
@@ -50,13 +58,26 @@ fun TodoRow(
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val ramp = LocalAgeRamp.current
-    val stripe by animateColorAsState(
-        targetValue = if (item.onTodayList && !item.todo.isDone) {
+    val stain by animateColorAsState(
+        targetValue = if (item.ages && !item.todo.isDone) {
             Aging.color(item.ageDays, ramp)
         } else {
             Color.Transparent
         },
-        label = "pasek starzenia",
+        label = "plama starzenia",
+    )
+
+    val stainWidthPx = with(LocalDensity.current) { STAIN_WIDTH.toPx() }
+    val brush = Brush.horizontalGradient(
+        // Pelny kolor trzyma sie do 40% szerokosci plamy, czyli za kolkiem, i dopiero
+        // potem gasnie - inaczej pod kolkiem bylby juz wyblakly i cel by przepadl.
+        colorStops = arrayOf(
+            0f to stain,
+            0.4f to stain,
+            1f to stain.copy(alpha = 0f),
+        ),
+        startX = 0f,
+        endX = stainWidthPx,
     )
 
     Surface(
@@ -66,21 +87,20 @@ fun TodoRow(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .background(brush),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .background(stripe)
+            Spacer(Modifier.width(14.dp))
+
+            CheckCircle(
+                done = item.todo.isDone,
+                onBackground = stain,
+                onClick = onToggleDone,
             )
 
-            Spacer(Modifier.width(12.dp))
-
-            CheckCircle(done = item.todo.isDone, onClick = onToggleDone)
-
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(14.dp))
 
             Column(
                 modifier = Modifier
@@ -120,9 +140,19 @@ fun TodoRow(
     }
 }
 
+/**
+ * Kolko odhaczania. Obwodka dostosowuje sie do tego, na czym stoi - na ciemnej plamie
+ * starzenia zwykly szary kontur znikal razem z celem, w ktory trzeba trafic.
+ */
 @Composable
-private fun CheckCircle(done: Boolean, onClick: () -> Unit) {
+private fun CheckCircle(done: Boolean, onBackground: Color, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
+    val ring = if (onBackground.alpha > 0.15f) {
+        contrastOn(onBackground)
+    } else {
+        scheme.outline
+    }
+
     Box(
         modifier = Modifier
             .size(24.dp)
@@ -130,7 +160,7 @@ private fun CheckCircle(done: Boolean, onClick: () -> Unit) {
             .background(if (done) scheme.primary else Color.Transparent)
             .border(
                 width = if (done) 0.dp else 2.dp,
-                color = if (done) Color.Transparent else scheme.outline,
+                color = if (done) Color.Transparent else ring,
                 shape = CircleShape,
             )
             .clickable(onClick = onClick),
