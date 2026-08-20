@@ -35,6 +35,8 @@ data class TodoUi(
     val onTodayList: Boolean = false,
     /** Regula powtarzania, jesli to instancja cykliczna - do etykiety na kafelku. */
     val rule: Recurrence? = null,
+    /** Termin jeszcze przed nami - rozstrzyga, ktore akcje maja sens w arkuszu. */
+    val hasFutureDate: Boolean = false,
 )
 
 data class HabitUi(
@@ -104,6 +106,7 @@ class MomentumViewModel(
                     ageDays = Aging.ageDays(it.plannedDate, day),
                     onTodayList = onToday(it),
                     rule = it.recurrenceId?.let(byId::get),
+                    hasFutureDate = it.plannedDate?.isAfter(day) == true,
                 )
             }
 
@@ -170,7 +173,13 @@ class MomentumViewModel(
                 it.plannedDate != null && (it.plannedDate.isAfter(day) || it.recurrenceId != null)
             }
                 .sortedBy { it.plannedDate }
-                .map { TodoUi(it, rule = it.recurrenceId?.let(byId::get)) }
+                .map {
+                    TodoUi(
+                        todo = it,
+                        rule = it.recurrenceId?.let(byId::get),
+                        hasFutureDate = it.plannedDate?.isAfter(day) == true,
+                    )
+                }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 

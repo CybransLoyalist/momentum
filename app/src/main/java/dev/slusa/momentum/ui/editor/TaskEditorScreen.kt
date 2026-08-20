@@ -117,8 +117,11 @@ fun TaskEditorScreen(
     val anchored = mode == RecurrenceMode.KALENDARZOWA &&
         (unit == RecurrenceUnit.MIESIAC || unit == RecurrenceUnit.ROK)
 
-    // Wybrany dzien podstawia sie pod kotwice, dopoki nie ruszysz jej recznie -
-    // klikniecie dziesiatego wrzesnia prawie zawsze znaczy "dziesiatego kazdego".
+    // Data i kotwica chodza razem w obie strony. Wybrany dzien podstawia sie pod
+    // kotwice, dopoki nie ruszysz jej recznie - a recznie wpisana kotwica przesuwa
+    // pierwszy termin na najblizsze jej wystapienie. Bez tego drugiego kierunku
+    // "co miesiac, 15." zapisane z domyslna data wypadalo jutro i dopiero kolejny
+    // cykl trafial na pietnastego.
     var anchorTouched by remember { mutableStateOf(existing?.rule?.anchorDay != null) }
     LaunchedEffect(date) {
         if (!anchorTouched) date?.let { anchorDay = it.dayOfMonth }
@@ -338,6 +341,7 @@ fun TaskEditorScreen(
                         NumberField(value = anchorDay, range = 1..31) {
                             anchorDay = it
                             anchorTouched = true
+                            date = firstOccurrence(it, unit, date, today)
                         }
                         Spacer(Modifier.width(10.dp))
                         Text(
@@ -416,4 +420,30 @@ private fun NumberField(value: Int, range: IntRange, onChange: (Int) -> Unit) {
             imeAction = ImeAction.Done,
         ),
     )
+}
+
+private fun onDay(base: java.time.LocalDate, day: Int): java.time.LocalDate =
+    base.withDayOfMonth(day.coerceIn(1, base.lengthOfMonth()))
+
+/**
+ * Najblizszy termin pasujacy do kotwicy dnia miesiaca, liczac od dzisiaj.
+ *
+ * Dla powtarzania rocznego miesiac bierze sie z juz wybranej daty - "29 lutego co rok"
+ * ma zostac lutym, a nie przeskoczyc na biezacy miesiac.
+ */
+private fun firstOccurrence(
+    day: Int,
+    unit: RecurrenceUnit,
+    current: java.time.LocalDate?,
+    today: java.time.LocalDate,
+): java.time.LocalDate = when (unit) {
+    RecurrenceUnit.ROK -> {
+        val candidate = onDay(current ?: today, day)
+        if (candidate.isBefore(today)) onDay(candidate.plusYears(1), day) else candidate
+    }
+
+    else -> {
+        val candidate = onDay(today, day)
+        if (candidate.isBefore(today)) onDay(today.plusMonths(1), day) else candidate
+    }
 }

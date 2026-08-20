@@ -51,20 +51,38 @@ fun TodoActionsSheet(
 
             when (item.todo.bucket) {
                 Bucket.GLOWNE -> {
-                    SheetAction(
-                        label = if (item.onTodayList) "Zdejmij z dzisiaj" else "Zrób to dzisiaj",
-                        onClick = onToggleToday,
-                    )
-                    // Sam kalendarz zostaje osobna pozycja, bo przelozenie na jutro
-                    // to dwa dotkniecia, a przez edytor byloby piec.
-                    SheetAction("Zaplanuj na inny dzień", onClick = onPickDate)
+                    // Zadanie cykliczne dostaje wezsze menu. Przelacznik "na dzisiaj"
+                    // kasuje date, a odlozenie na kiedys kasuje regule - obie akcje
+                    // po cichu rozbrajaja powtarzanie, wiec od zmiany terminu cyklu
+                    // jest edytor, gdzie widac, co sie zmienia.
+                    if (item.rule == null) {
+                        SheetAction(
+                            label = if (item.onTodayList) {
+                                "Zdejmij z dzisiaj"
+                            } else {
+                                "Zrób to dzisiaj"
+                            },
+                            onClick = onToggleToday,
+                        )
+                    }
+
                     SheetAction("Edytuj…", onClick = onEdit)
-                    SheetAction("Odłóż na kiedyś") { onMoveTo(Bucket.KIEDYS) }
-                    SheetAction("Przenieś do zakupów") { onMoveTo(Bucket.ZAKUPY) }
+
+                    if (item.rule == null) {
+                        SheetAction("Odłóż na kiedyś") { onMoveTo(Bucket.KIEDYS) }
+                    }
+
+                    // Zakupy nie maja dat, wiec przenoszenie tam rzeczy z terminem
+                    // w przyszlosci znaczyloby tylko tyle, co ciche skasowanie terminu.
+                    if (item.rule == null && !item.hasFutureDate) {
+                        SheetAction("Przenieś do zakupów") { onMoveTo(Bucket.ZAKUPY) }
+                    }
                 }
 
                 Bucket.KIEDYS -> {
                     SheetAction("Przenieś na listę główną") { onMoveTo(Bucket.GLOWNE) }
+                    // Jedyna droga do terminu z tej listy: edytor pokazuje tu samo
+                    // pole nazwy, bo rzecz odlozona "na kiedys" nie ma daty.
                     SheetAction("Zaplanuj na konkretny dzień", onClick = onPickDate)
                     SheetAction("Zmień nazwę…", onClick = onEdit)
                 }
@@ -80,7 +98,11 @@ fun TodoActionsSheet(
                 color = MaterialTheme.colorScheme.outline,
             )
 
-            SheetAction("Usuń", destructive = true, onClick = onDelete)
+            SheetAction(
+                label = if (item.rule == null) "Usuń" else "Usuń i przestań powtarzać",
+                destructive = true,
+                onClick = onDelete,
+            )
         }
     }
 }

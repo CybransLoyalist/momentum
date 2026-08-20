@@ -11,6 +11,38 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Kotwica dnia miesiąca przesuwa pierwszy termin
+
+„Co miesiąc, 15." zapisane z domyślną datą wypadało **jutro**, a dopiero kolejny cykl trafiał na
+piętnastego — bo kotwica rządziła następnymi terminami, a nie tym pierwszym. Wyglądało to na błąd
+i nim było: nikt, kto wpisuje „15.", nie ma na myśli „jutro, a potem piętnastego".
+
+Data i kotwica chodzą teraz razem w obie strony. Wybrana data podstawia się pod kotwicę, dopóki
+nie ruszysz jej ręcznie; ręcznie wpisana kotwica przesuwa pierwszy termin na najbliższe swoje
+wystąpienie, licząc od dzisiaj. Przy powtarzaniu rocznym miesiąc bierze się z już wybranej daty,
+żeby „29 lutego co rok" zostało lutym.
+
+**Ślad:** `TaskEditorScreen.firstOccurrence`.
+
+## 2026-08-20 · Arkusz akcji pokazuje tylko to, co ma sens dla tego zadania
+
+Menu było takie samo dla wszystkiego, więc przy zadaniu cyklicznym z Planu oferowało rzeczy,
+które po cichu je rozbrajały, a przy zaplanowanym — przeniesienie do zakupów, czyli listy bez dat.
+
+Zadanie cykliczne traci „Zrób to dzisiaj" (kasuje datę, czyli punkt odniesienia cyklu) i „Odłóż
+na kiedyś" (kasuje regułę). Obie zmiany są odwracalne tylko przez ponowne skonfigurowanie cyklu,
+więc od zmiany terminu powtarzającego się zadania jest edytor, gdzie widać, co się zmienia.
+„Usuń" mówi wprost, że kończy powtarzanie. Zadanie z terminem w przyszłości traci „Przenieś do
+zakupów", bo zakupy nie mają dat i znaczyłoby to tylko ciche skasowanie terminu.
+
+Wypadło też „Zaplanuj na inny dzień" z listy głównej. Broniłem go jako skrótu — dwa dotknięcia
+zamiast pięciu — ale z samych etykiet nie dało się odgadnąć, czym różni się od „Edytuj…", a menu,
+w którym trzeba zgadywać, kosztuje więcej niż trzy zaoszczędzone dotknięcia. Została jedna droga
+do terminu. Wyjątek to lista Kiedyś, gdzie „Zaplanuj na konkretny dzień" zostaje, bo edytor
+pokazuje tam samo pole nazwy i inaczej nie dałoby się nadać daty.
+
+**Ślad:** `ui/components/TodoActionsSheet.kt`.
+
 ## 2026-08-19 · Pełny ekran edytora zamiast konfiguracji w okienku
 
 Wciśnięcie powtarzania pod kalendarz w okienku nie wyszło: rozwijana lista miesięcy nachodziła
