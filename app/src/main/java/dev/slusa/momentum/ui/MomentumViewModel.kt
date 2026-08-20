@@ -289,6 +289,10 @@ class MomentumViewModel(
         settingsStore.setAfternoon(reminder)
     }
 
+    fun setShoppingKeywords(text: String) = viewModelScope.launch {
+        settingsStore.setShoppingKeywords(text)
+    }
+
     // --- kopia zapasowa ---
 
     fun setBackupFolder(uri: String?) = viewModelScope.launch {

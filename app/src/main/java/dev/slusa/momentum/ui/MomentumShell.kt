@@ -152,6 +152,8 @@ fun MomentumShell(vm: MomentumViewModel) {
             onBackupNow = vm::backupNow,
             onShareBackup = vm::shareBackup,
             onRestore = vm::restoreFrom,
+            shoppingKeywords = settings.shoppingKeywords,
+            onKeywordsChange = vm::setShoppingKeywords,
         )
         return
     }

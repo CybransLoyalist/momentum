@@ -11,6 +11,57 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Most głosowy przez Google Tasks mimo AppFunctions
+
+Pytanie „czy nie ma innej drogi niż Ok Google" wymusiło przegląd, bo krajobraz zmienił się
+od czasu spec. Wynik:
+
+**Bixby odpada i spec miał rację.** Kapsułki Bixby to platforma serwerowa — kod działa w chmurze
+Samsunga, przechodzi przez zgłoszenie do Marketplace i integruje usługi, nie lokalne aplikacje.
+Kapsułka nie ma jak zapisać czegokolwiek do bazy na telefonie.
+
+**Samsung Modes and Routines nie przenosi treści.** „Hey Bixby, start my routine" uruchomi rutynę,
+która otworzy aplikację, ale fraza jest z góry ustalona i nic z podyktowanego tekstu nie zostaje
+przekazane. To skrót do otwierania, nie rura do dyktowania.
+
+**AppFunctions to właściwy docelowy kształt, ale nie dla nas.** Aplikacja zadeklarowałaby
+`dodajZadanie(tytuł, termin)` jako narzędzie, a Gemini wywoływałoby je prosto — bez Google Tasks
+w środku, bez OAuth, bez odpytywania. Tyle że integracja z Gemini siedzi w prywatnym podglądzie
+od maja 2026 i nic nie wskazuje, żeby z niego wyszła. Znaleziony przypadek dewelopera: sześć
+funkcji zaindeksowanych i włączonych w systemie, Gemini ich nie widzi, pytanie o wsparcie własnych
+schematów zostało bez odpowiedzi i zgłoszenie wygasło. Gotowe schematy zadań i notatek istnieją,
+ale znaleziono je w aplikacji Samsunga i nie są aktywne.
+
+Wzorzec jest znajomy: App Actions też zostały otwarte dla wszystkich, potem zawężone do partnerów,
+potem wygaszone. Aplikacja spoza sklepu, na jednego użytkownika, jest dokładnie tym, co przy
+zawężaniu odpada pierwsze.
+
+**Decyzja: budujemy most przez Google Tasks**, bo to jedyna rzecz dająca dyktowanie bez rąk dziś,
+a test na telefonie potwierdził, że rura działa. Warstwa importu — rozpoznawanie słów, routing na
+listy, odsiewanie duplikatów — jest oddzielona od źródła, więc gdyby AppFunctions kiedyś się
+otworzyły, dopisujemy je jako drugie wejście do tej samej warstwy. To nie kosztuje nic teraz.
+
+Odrzucony po drodze **widżet z mikrofonem**, mimo że spec trzymał go jako plan awaryjny: skoro
+i tak trzeba dotknąć telefonu, oszczędza dwie sekundy względem otwarcia aplikacji. Cała wartość
+mostu jest w tym, że ręce są zajęte.
+
+**Ślad:** `docs/google-cloud.md`, `domain/Routing.kt`.
+
+## 2026-08-20 · Słowo kluczowe zakupów liczy się tylko na początku
+
+Szukanie słowa w całym tekście wyglądało kusząco i jest błędem: „zadzwonić do Ani, żeby kupiła
+mleko" to zadanie, a nie pozycja na liście zakupów. Liczy się wyłącznie pierwsze słowo — dzięki
+temu mówisz „kup mleko" i wiesz, gdzie to wyląduje, bez zgadywania.
+
+Rozpoznane słowo znika z tytułu, bo na liście zakupów „kup" niczego nie wnosi. Zostaje tylko
+wtedy, gdy było całą treścią — „kup" bez reszty to lepszy tytuł niż pusty.
+
+Wyczyszczone pole słów kluczowych w ustawieniach znaczy „domyślne", a nie „nie rozpoznawaj nic".
+Druga interpretacja byłaby pułapką: wszystko lądowałoby po cichu na liście głównej i długo nie
+byłoby wiadomo dlaczego.
+
+**Ślad:** `Routing.route`, `Routing.parseKeywords`.
+
 ## 2026-08-20 · Kopia musi przeżyć utratę telefonu, nie tylko pomyłkę
 
 Pytanie „a czy ta kopia będzie poza telefonem?" obnażyło dziurę. Pliki JSON lądowały w folderze

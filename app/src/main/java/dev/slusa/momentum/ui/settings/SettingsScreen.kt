@@ -29,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -53,6 +54,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.slusa.momentum.BuildConfig
 import dev.slusa.momentum.data.Reminder
 import dev.slusa.momentum.data.Vacation
+import dev.slusa.momentum.domain.Routing
 import dev.slusa.momentum.notifications.PowerSaving
 import dev.slusa.momentum.ui.components.PickDateDialog
 import dev.slusa.momentum.ui.components.ScreenHeader
@@ -87,6 +89,8 @@ fun SettingsScreen(
     onBackupNow: () -> Unit,
     onShareBackup: () -> Unit,
     onRestore: (Uri) -> Unit,
+    shoppingKeywords: List<String>,
+    onKeywordsChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pickingReturn by remember { mutableStateOf(false) }
@@ -269,6 +273,10 @@ fun SettingsScreen(
                     onShare = onShareBackup,
                     onRestore = { pickBackupFile.launch(arrayOf("*/*")) },
                 )
+            }
+
+            item {
+                VoiceCard(keywords = shoppingKeywords, onKeywordsChange = onKeywordsChange)
             }
 
             item { PhoneSwapCard() }
@@ -565,6 +573,53 @@ private fun VacationCard(
 private fun canPostNotifications(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
         PackageManager.PERMISSION_GRANTED
+
+/**
+ * Most glosowy. Na razie tylko slowa kluczowe - polaczenie z kontem Google dojdzie tu,
+ * gdy bedzie identyfikator klienta.
+ */
+@Composable
+private fun VoiceCard(keywords: List<String>, onKeywordsChange: (String) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    var draft by remember(keywords) { mutableStateOf(Routing.joinKeywords(keywords)) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = scheme.surface,
+        border = BorderStroke(1.dp, scheme.outline),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = "Most głosowy",
+                style = MaterialTheme.typography.titleMedium,
+                color = scheme.onSurface,
+            )
+            Text(
+                text = "Podyktowane zadanie zaczynające się od jednego z tych słów trafia " +
+                    "na listę zakupów, a samo słowo znika z tytułu. Liczy się tylko " +
+                    "pierwsze słowo — „zadzwonić do Ani, żeby kupiła mleko” zostaje " +
+                    "zadaniem.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = draft,
+                onValueChange = {
+                    draft = it
+                    onKeywordsChange(it)
+                },
+                label = { Text("Słowa kluczowe zakupów") },
+                supportingText = { Text("Po przecinku. Puste pole wraca do domyślnych.") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
 
 /**
  * Instrukcja wymiany telefonu, zwinieta domyslnie.
