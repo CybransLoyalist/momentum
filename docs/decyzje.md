@@ -11,6 +11,38 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-19 · Pełny ekran edytora zamiast konfiguracji w okienku
+
+Wciśnięcie powtarzania pod kalendarz w okienku nie wyszło: rozwijana lista miesięcy nachodziła
+na przełącznik „Powtarzaj”. To nie był błąd do poprawienia paroma dpkami — konfiguracja cyklu
+po prostu potrzebuje miejsca, którego okno dialogowe nie ma. Powstał osobny, pełny ekran
+tworzenia i edycji zadania, a kalendarz wrócił do bycia zwykłym kalendarzem.
+
+Pasek dodawania **zostaje** na ToDo, Kiedyś, Zakupach i Nawykach. Kuszące było ujednolicenie
+wszystkiego pod jeden okrągły przycisk, ale wpisywanie zakupów idzie seriami — „mleko”, „chleb”,
+„masło” — i przepuszczanie każdej pozycji przez pełny ekran z zapisem byłoby wyraźnym cofnięciem.
+Spec mówi o tej liście wprost: zero ceregieli.
+
+Ustępuje tylko Plan, bo tam samym tytułem i tak nic nie dodasz. Jego plusik zamienił się
+w strzałkę — skoro na czterech ekranach przycisk dodaje od razu, a tu otwiera ekran, to musi
+wyglądać inaczej, inaczej ręka nauczy się jednego i zdziwi na drugim. Jest też aktywny przy
+pustym polu: skoro i tak otwiera ekran z dużym polem i klawiaturą, wymaganie tytułu wcześniej
+było sztuczne.
+
+Edytor **nie dostaje wyboru listy**, choć się prosił. Przestawienie listy na zakupy po cichu
+zabrałoby zadaniu datę i cykliczność, a to za duża cena za jedno pole. Przenoszenie między
+listami zostaje w arkuszu akcji, gdzie widać, że to osobna decyzja. Edytor odpowiada za trzy
+rzeczy: nazwę, termin, powtarzanie.
+
+„Zaplanuj na inny dzień” zostało w arkuszu obok „Edytuj…”, mimo że edytor też umie zmienić datę.
+Przełożenie czegoś na jutro to dwa dotknięcia, a przez edytor byłoby pięć — to nie duplikat,
+tylko skrót do najczęstszej czynności.
+
+Przy okazji doszła zmiana nazwy zadania, której nie było w ogóle: raz wpisany tytuł zostawał
+na zawsze.
+
+**Ślad:** `ui/editor/TaskEditorScreen.kt`, `TodoRepository.addTask` i `.edit`.
+
 ## 2026-08-19 · Termin i powtarzanie w jednym oknie
 
 Powtarzanie było osobnym arkuszem, doklejanym do istniejącego zadania. Dodanie czynszu

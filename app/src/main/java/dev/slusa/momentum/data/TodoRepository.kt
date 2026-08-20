@@ -59,47 +59,62 @@ class TodoRepository(
     }
 
     /**
-     * Ustawia termin i powtarzanie za jednym razem. Data w przyszlosci znika z listy
-     * glownej i wraca sama tego dnia; [Todo.fromSchedule] rozdziela potem sekcje
-     * "z terminem" od recznie oznaczonych.
-     *
-     * Jedna metoda, a nie dwie skladane po stronie UI: termin i regula siedza w tym
-     * samym rekordzie, wiec dwa osobne odczyty i zapisy moglyby sie wzajemnie
-     * nadpisac. [rule] rowne null oznacza "to sie nie powtarza".
+     * Szybka podmiana terminu, bez ruszania reguly powtarzania. Data w przyszlosci
+     * znika z listy glownej i wraca sama tego dnia; [Todo.fromSchedule] rozdziela
+     * potem sekcje "z terminem" od recznie oznaczonych.
      */
-    suspend fun plan(id: Long, date: LocalDate, rule: Recurrence?) {
+    suspend fun schedule(id: Long, date: LocalDate) {
+        val todo = dao.byId(id) ?: return
+        dao.update(todo.copy(plannedDate = date, fromSchedule = true, bucket = Bucket.GLOWNE))
+    }
+
+    /** Nowe zadanie z pelnego edytora: nazwa, termin i ewentualna regula naraz. */
+    suspend fun addTask(title: String, date: LocalDate?, rule: Recurrence?): Long {
+        val id = add(title = title, plannedDate = date, fromSchedule = date != null)
+        if (id <= 0) return id
+
+        val effective = if (date == null) null else rule
+        if (effective != null) {
+            val ruleId = recurrences.insert(effective.copy(id = 0))
+            dao.byId(id)?.let { dao.update(it.copy(recurrenceId = ruleId)) }
+        }
+        return id
+    }
+
+    /**
+     * Zapis z pelnego edytora. Nazwa, termin i regula ida jedna operacja, bo siedza
+     * w tym samym rekordzie - dwa osobne odczyty z zapisem moglyby sie nadpisac.
+     *
+     * [date] rowne null oznacza zadanie bez terminu, a wtedy regula znika razem
+     * z data: powtarzanie nie ma wtedy od czego liczyc nastepnego razu.
+     */
+    suspend fun edit(id: Long, title: String, date: LocalDate?, rule: Recurrence?) {
         val todo = dao.byId(id) ?: return
         val existing = todo.recurrenceId?.let { recurrences.byId(it) }
+        val effective = if (date == null) null else rule
 
         val ruleId = when {
-            rule == null -> {
+            effective == null -> {
                 existing?.let { recurrences.delete(it.id) }
                 null
             }
 
             existing != null -> {
-                recurrences.update(rule.copy(id = existing.id))
+                recurrences.update(effective.copy(id = existing.id))
                 existing.id
             }
 
-            else -> recurrences.insert(rule.copy(id = 0))
+            else -> recurrences.insert(effective.copy(id = 0))
         }
 
         dao.update(
             todo.copy(
-                bucket = Bucket.GLOWNE,
+                title = title.trim().ifEmpty { todo.title },
                 plannedDate = date,
-                fromSchedule = true,
+                fromSchedule = date != null,
                 recurrenceId = ruleId,
             )
         )
-    }
-
-    /** Dopisanie od razu z terminem i ewentualna regula - sciezka z ekranu Plan. */
-    suspend fun addScheduled(title: String, date: LocalDate, rule: Recurrence?): Long {
-        val id = add(title = title, plannedDate = date, fromSchedule = true)
-        if (id > 0 && rule != null) plan(id, date, rule)
-        return id
     }
 
     /**

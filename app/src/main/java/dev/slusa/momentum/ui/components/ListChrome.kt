@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -164,6 +165,11 @@ fun AddBar(
     placeholder: String,
     onSubmit: () -> Unit,
     trailing: (@Composable () -> Unit)? = null,
+    /** Plusik dodaje od razu; strzalka na ekranie Plan otwiera edytor. */
+    submitIcon: ImageVector = Icons.Default.Add,
+    submitLabel: String = "Dodaj",
+    /** Plan pozwala otworzyc edytor takze bez wpisanego tytulu. */
+    submitEnabled: Boolean = value.isNotBlank(),
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -199,11 +205,11 @@ fun AddBar(
 
             Spacer(Modifier.width(4.dp))
 
-            IconButton(onClick = onSubmit, enabled = value.isNotBlank()) {
+            IconButton(onClick = onSubmit, enabled = submitEnabled) {
                 Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Dodaj",
-                    tint = if (value.isNotBlank()) {
+                    imageVector = submitIcon,
+                    contentDescription = submitLabel,
+                    tint = if (submitEnabled) {
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.outline

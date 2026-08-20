@@ -27,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.slusa.momentum.ui.components.ScheduleDialog
+import dev.slusa.momentum.ui.components.PickDateDialog
 import dev.slusa.momentum.ui.components.TodoActionsSheet
 import dev.slusa.momentum.ui.icons.MomentumIcons
+import dev.slusa.momentum.ui.editor.EditorTarget
+import dev.slusa.momentum.ui.editor.TaskEditorScreen
 import dev.slusa.momentum.ui.habits.HabitEditorSheet
 import dev.slusa.momentum.ui.habits.HabitsScreen
 import dev.slusa.momentum.ui.lists.ScheduledScreen
@@ -57,8 +59,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     var tab by rememberSaveable { mutableStateOf(Tab.TODO_) }
     var sheetFor by remember { mutableStateOf<TodoUi?>(null) }
     var dateFor by remember { mutableStateOf<TodoUi?>(null) }
-    // To samo okno co dateFor, tylko z rozwinieta sekcja powtarzania.
-    var recurrenceFor by remember { mutableStateOf<TodoUi?>(null) }
+    var editorTarget by remember { mutableStateOf<EditorTarget?>(null) }
     var habitFor by remember { mutableStateOf<HabitUi?>(null) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
 
@@ -68,9 +69,12 @@ fun MomentumShell(vm: MomentumViewModel) {
         onPauseOrDispose { }
     }
 
-    // Systemowy powrot zamyka najpierw ustawienia, potem wraca na liste glowna.
-    BackHandler(enabled = showSettings) { showSettings = false }
-    BackHandler(enabled = !showSettings && tab != Tab.TODO_) { tab = Tab.TODO_ }
+    // Systemowy powrot zamyka po kolei: edytor, ustawienia, potem wraca na liste glowna.
+    BackHandler(enabled = editorTarget != null) { editorTarget = null }
+    BackHandler(enabled = editorTarget == null && showSettings) { showSettings = false }
+    BackHandler(enabled = editorTarget == null && !showSettings && tab != Tab.TODO_) {
+        tab = Tab.TODO_
+    }
 
     val todayState by vm.todayState.collectAsStateWithLifecycle()
     val somedayItems by vm.somedayState.collectAsStateWithLifecycle()
@@ -79,6 +83,24 @@ fun MomentumShell(vm: MomentumViewModel) {
     val todayHabits by vm.todayHabits.collectAsStateWithLifecycle()
     val allHabits by vm.habitsState.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
+
+    editorTarget?.let { target ->
+        TaskEditorScreen(
+            target = target,
+            today = todayState.day,
+            onCancel = { editorTarget = null },
+            onSave = { title, date, rule ->
+                val existing = target.item
+                if (existing == null) {
+                    vm.addTask(title, date, rule)
+                } else {
+                    vm.editTask(existing.todo.id, title, date, rule)
+                }
+                editorTarget = null
+            },
+        )
+        return
+    }
 
     if (showSettings) {
         SettingsScreen(
@@ -140,7 +162,7 @@ fun MomentumShell(vm: MomentumViewModel) {
                 Tab.ZAPLANOWANE -> ScheduledScreen(
                     items = scheduledItems,
                     today = todayState.day,
-                    onAddScheduled = vm::addScheduled,
+                    onOpenEditor = { editorTarget = EditorTarget(draftTitle = it) },
                     onToggleDone = vm::setDone,
                     onItemClick = { sheetFor = it },
                 )
@@ -174,9 +196,9 @@ fun MomentumShell(vm: MomentumViewModel) {
                 sheetFor = null
                 dateFor = item
             },
-            onRecurrence = {
+            onEdit = {
                 sheetFor = null
-                recurrenceFor = item
+                editorTarget = EditorTarget(item = item)
             },
             onMoveTo = { bucket ->
                 vm.moveTo(item.todo.id, bucket)
@@ -208,23 +230,15 @@ fun MomentumShell(vm: MomentumViewModel) {
         )
     }
 
-    // Termin i powtarzanie to jedno okno. Dwa wejscia rozniace sie tylko tym, czy
-    // sekcja powtarzania jest od razu rozwinieta - zaleznie od tego, po co przyszlas.
-    (dateFor ?: recurrenceFor)?.let { item ->
-        ScheduleDialog(
+    dateFor?.let { item ->
+        PickDateDialog(
             initial = item.todo.plannedDate ?: todayState.day.plusDays(1),
             today = todayState.day,
-            initialRule = item.rule,
-            startWithRecurrence = recurrenceFor != null,
-            confirmLabel = "Zapisz",
-            onDismiss = {
+            confirmLabel = "Zaplanuj",
+            onDismiss = { dateFor = null },
+            onPicked = { date ->
+                vm.schedule(item.todo.id, date)
                 dateFor = null
-                recurrenceFor = null
-            },
-            onPicked = { date, rule ->
-                vm.plan(item.todo.id, date, rule)
-                dateFor = null
-                recurrenceFor = null
             },
         )
     }

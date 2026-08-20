@@ -29,7 +29,7 @@ fun TodoActionsSheet(
     onDismiss: () -> Unit,
     onToggleToday: () -> Unit,
     onPickDate: () -> Unit,
-    onRecurrence: () -> Unit,
+    onEdit: () -> Unit,
     onMoveTo: (Bucket) -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -55,17 +55,10 @@ fun TodoActionsSheet(
                         label = if (item.onTodayList) "Zdejmij z dzisiaj" else "Zrób to dzisiaj",
                         onClick = onToggleToday,
                     )
+                    // Sam kalendarz zostaje osobna pozycja, bo przelozenie na jutro
+                    // to dwa dotkniecia, a przez edytor byloby piec.
                     SheetAction("Zaplanuj na inny dzień", onClick = onPickDate)
-                    // Obie akcje otwieraja to samo okno - ta druga tylko z rozwinieta
-                    // sekcja powtarzania, bo wchodzisz w nia po regule, a nie po dacie.
-                    SheetAction(
-                        label = if (item.rule == null) {
-                            "Powtarzaj cyklicznie"
-                        } else {
-                            "Powtarzanie: ${item.rule.describe()}"
-                        },
-                        onClick = onRecurrence,
-                    )
+                    SheetAction("Edytuj…", onClick = onEdit)
                     SheetAction("Odłóż na kiedyś") { onMoveTo(Bucket.KIEDYS) }
                     SheetAction("Przenieś do zakupów") { onMoveTo(Bucket.ZAKUPY) }
                 }
@@ -73,10 +66,12 @@ fun TodoActionsSheet(
                 Bucket.KIEDYS -> {
                     SheetAction("Przenieś na listę główną") { onMoveTo(Bucket.GLOWNE) }
                     SheetAction("Zaplanuj na konkretny dzień", onClick = onPickDate)
+                    SheetAction("Zmień nazwę…", onClick = onEdit)
                 }
 
                 Bucket.ZAKUPY -> {
                     SheetAction("Przenieś na listę główną") { onMoveTo(Bucket.GLOWNE) }
+                    SheetAction("Zmień nazwę…", onClick = onEdit)
                 }
             }
 

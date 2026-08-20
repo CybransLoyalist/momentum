@@ -206,9 +206,12 @@ class MomentumViewModel(
             )
         }
 
-    fun addScheduled(title: String, date: LocalDate, rule: Recurrence?) = viewModelScope.launch {
-        todos.addScheduled(title, date, rule)
+    fun addTask(title: String, date: LocalDate?, rule: Recurrence?) = viewModelScope.launch {
+        todos.addTask(title, date, rule)
     }
+
+    fun editTask(id: Long, title: String, date: LocalDate?, rule: Recurrence?) =
+        viewModelScope.launch { todos.edit(id, title, date, rule) }
 
     fun toggleToday(id: Long) = viewModelScope.launch { todos.toggleToday(id, today.value) }
 
@@ -216,10 +219,7 @@ class MomentumViewModel(
         todos.setDone(id, done, today = today.value)
     }
 
-    /** Termin i powtarzanie ida razem - patrz [TodoRepository.plan]. */
-    fun plan(id: Long, date: LocalDate, rule: Recurrence?) = viewModelScope.launch {
-        todos.plan(id, date, rule)
-    }
+    fun schedule(id: Long, date: LocalDate) = viewModelScope.launch { todos.schedule(id, date) }
 
     fun moveTo(id: Long, bucket: Bucket) = viewModelScope.launch { todos.moveTo(id, bucket) }
 
