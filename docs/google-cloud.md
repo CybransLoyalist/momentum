@@ -26,20 +26,34 @@ To jedyne API, którego potrzebujemy.
 
 ## 3. Ekran zgody
 
-**Interfejsy API i usługi → Ekran akceptacji OAuth** (w nowszym układzie konsoli:
-**Google Auth Platform**).
+**Interfejsy API i usługi → Ekran akceptacji OAuth**. W nowszym układzie konsoli nazywa
+się to **Google Auth Platform** i zamiast formularza dostaniesz ekran „Google Auth Platform
+not configured yet" z przyciskiem **Get started**. Kliknij go — to kreator na cztery kroki:
 
-- Typ użytkownika: **Zewnętrzny**
-- Nazwa aplikacji: `Momentum`
-- Adres e-mail pomocy: twój
-- Dane kontaktowe dewelopera: twój adres
+**App Information**
+- App name: `Momentum`
+- User support email: twój adres
 
-Reszty pól nie wypełniaj — logo, strona domowa i polityka prywatności są potrzebne
-dopiero przy weryfikacji, przez którą nie przechodzimy.
+**Audience** — tu jest wybór typu użytkownika
+- **External**
+- *Internal* będzie wyszarzone i tak ma być: ta opcja istnieje wyłącznie dla kont
+  w organizacji Google Workspace, a nie dla zwykłego Gmaila
+
+**Contact Information**
+- Twój adres e-mail
+
+**Finish**
+- Zaznacz zgodę na *Google API Services: User Data Policy* → **Create**
+
+Logo, strony domowej i polityki prywatności nie wypełniaj — są potrzebne dopiero przy
+weryfikacji, przez którą nie przechodzimy.
+
+Po zamknięciu kreatora pozycje w lewym menu (Branding, Audience, Clients, Data Access)
+przestaną być puste. Dopiero teraz da się zrobić kolejne kroki.
 
 ## 4. Zakres uprawnień
 
-W sekcji **Dostęp do danych** (albo **Zakresy**) → **Dodaj lub usuń zakresy** →
+**Data Access** (po polsku **Dostęp do danych**) → **Add or remove scopes** →
 wklej w filtr:
 
 ```
@@ -60,8 +74,8 @@ oraz dożywotni limit stu użytkowników projektu. Jest jeden użytkownik: ty.
 
 **To jest krok, którego nie wolno pominąć.**
 
-W **Odbiorcy** (albo na ekranie akceptacji) znajdź stan publikacji i kliknij
-**Opublikuj aplikację** → potwierdź przejście na **W produkcji**.
+**Audience** (**Odbiorcy**) → zobaczysz „Publishing status: Testing" i przycisk
+**Publish app**. Kliknij go i potwierdź przejście na **In production**.
 
 Dlaczego to takie ważne: dokumentacja Google wiąże siedmiodniowe wygasanie tokenu ze
 stanem **Testowanie**. Zostawiona w testach aplikacja **przestanie działać po tygodniu**
@@ -72,7 +86,8 @@ Jedyną ceną jest ten jednorazowy ekran ostrzeżenia z punktu 4.
 
 ## 6. Identyfikator klienta
 
-**Interfejsy API i usługi → Dane logowania → Utwórz dane logowania →
+**Clients** (**Klienci**) w menu Google Auth Platform → **Create client**.
+W starszym układzie: **Interfejsy API i usługi → Dane logowania → Utwórz dane logowania →
 Identyfikator klienta OAuth**.
 
 - Typ aplikacji: **Android**
