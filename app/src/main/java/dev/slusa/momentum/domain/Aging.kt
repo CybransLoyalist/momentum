@@ -37,12 +37,22 @@ object Aging {
     }
 }
 
+private val INK = Color(0xFF141920)
+
 /**
- * Czarny albo bialy tekst na podanym tle, zaleznie od tego, ktory bedzie czytelny.
+ * Ciemny albo bialy tekst na podanym tle - ten z dwoch, ktory ma wyzszy kontrast.
  *
- * Potrzebne wszedzie tam, gdzie tlo jedzie po rampie kolorow: to samo pole bywa
- * jasnozielone i prawie czarne, wiec kolor tekstu wpisany na sztywno musialby przegrac
- * na jednym koncu skali.
+ * Prog jasnosci wpisany z reki byl blizej, niz wygladalo: ciepla limonka ma jasnosc
+ * ponizej polowy, a mimo to czyta sie na niej duzo lepiej ciemny napis niz bialy.
+ * Liczenie wspolczynnika kontrastu z definicji jest krotsze niz zgadywanie progu
+ * i nie trzeba go poprawiac przy kazdej zmianie palety.
  */
-fun contrastOn(background: Color): Color =
-    if (background.luminance() > 0.45f) Color(0xFF141920) else Color.White
+fun contrastOn(background: Color): Color {
+    val lum = background.luminance()
+    return if (ratio(lum, INK.luminance()) >= ratio(lum, WHITE_LUMINANCE)) INK else Color.White
+}
+
+private const val WHITE_LUMINANCE = 1f
+
+private fun ratio(a: Float, b: Float): Float =
+    (maxOf(a, b) + 0.05f) / (minOf(a, b) + 0.05f)

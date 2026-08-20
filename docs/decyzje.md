@@ -11,6 +11,34 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-20 · Jeden ciepły zielony jako nagroda w obu rampach
+
+Morska zieleń na końcu obu skal czytała się jak status systemu, a nie jak dobra wiadomość — zimna
+i techniczna dokładnie tam, gdzie ma być nagrodą. Zastąpiona ciepłą limonką `#93B84C`.
+
+Zmiana wymusiła przebudowę obu ramp, nie podmianę jednego pola. Limonka była wcześniej drugim
+przystankiem rampy starzenia, więc przystanki musiały się rozjechać na nowo — teraz idą po
+odcieniu: limonka, złoto, bursztyn, czerwień, ciemna czerwień, czerń. Każdy krok jest widoczny
+jako krok, a nie jako przyciemnienie poprzedniego. Rampa dorobku wędruje z zimnej szarości ku
+tej samej limonce, więc sam odcień ociepla się razem z liczbą.
+
+Kolor mieszka pod jedną nazwą `RewardGreen` i jest **identyczny w obu motywach**. Wcześniej
+„świeże” i „zrobione” były tylko podobne i dało się zmienić jedno bez drugiego; teraz nie da się.
+
+**Ślad:** `theme/Color.kt`.
+
+## 2026-08-20 · Kolor tekstu liczony z kontrastu, nie z progu jasności
+
+Wybór między ciemnym a białym napisem stał na progu jasności wpisanym z ręki i ten próg był zły.
+Ciepła limonka ma jasność poniżej połowy, więc dostawała biały napis — a czyta się na niej znacznie
+lepiej ciemny. To samo dotyczyło obwódki kółka odhaczania na jasnych plamach starzenia.
+
+Teraz liczy się współczynnik kontrastu z definicji i wybiera lepszy z dwóch kandydatów. Krócej niż
+zgadywanie progu i nie trzeba tego poprawiać przy każdej zmianie palety — co przy dwóch rampach
+po sześć przystanków przestało być teoretyczne.
+
+**Ślad:** `Aging.contrastOn`.
+
 ## 2026-08-20 · Kara ma teraz parę w nagrodzie
 
 Lista ToDo miała wyłącznie mechanizm kary. Pasek gnicia ciemnieje, gdy czegoś nie robisz,

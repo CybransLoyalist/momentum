@@ -26,30 +26,40 @@ val SurfaceVariantDark = Color(0xFF1B222B)
 val OutlineDark = Color(0xFF26303B)
 
 /**
- * Rampa starzenia sie zadan: swieze -> zgnile. Uzywana jako pasek przy lewej
- * krawedzi kafelka, nigdy jako tlo calego kafelka.
+ * Kolor nagrody: cieple limonkowe zielone, wspolne dla obu ramp.
  *
- * Rampa zostaje ciepla mimo niebieskiego akcentu, bo niesie znaczenie, a nie marke:
+ * Zimna morska zielen wygladala jak status systemu, a nie jak dobra wiadomosc. Ta sama
+ * wartosc konczy rampe dorobku i zaczyna rampe starzenia, bo "zrobione" i "swieze" to
+ * ta sama informacja - i jedyne miejsce, w ktorym obie skale trzeba trzymac w zgodzie.
+ */
+val RewardGreen = Color(0xFF93B84C)
+
+/**
+ * Rampa starzenia sie zadan: swieze -> zgnile. Uzywana jako plama przy lewej krawedzi
+ * kafelka, nigdy jako tlo calego kafelka.
+ *
+ * Rampa jest ciepla mimo niebieskiego akcentu, bo niesie znaczenie, a nie marke:
  * zielone-swieze i czerwone-spoznione czyta kazdy bez tlumaczenia, a przelozenie tego
- * na odcienie niebieskiego zamienilo by sygnal w dekoracje. Pierwszy przystanek zszedl
- * tylko w strone morskiej zieleni, zeby swiezy pasek nie klocil sie z reszta ekranu.
+ * na odcienie niebieskiego zamienilo by sygnal w dekoracje. Przystanki ida po odcieniu -
+ * limonka, zloto, bursztyn, czerwien, ciemna czerwien, czern - zeby kazdy krok byl
+ * widoczny jako krok, a nie jako przyciemnienie poprzedniego.
  */
 object AgeRamp {
     val light = listOf(
-        Color(0xFF2E9B86),
-        Color(0xFF7FA23F),
-        Color(0xFFC9A227),
-        Color(0xFFCE6B3A),
-        Color(0xFF9E3030),
+        RewardGreen,
+        Color(0xFFC2B23C),
+        Color(0xFFD08A2E),
+        Color(0xFFC4562F),
+        Color(0xFF8F2A2A),
         Color(0xFF191517),
     )
 
     val dark = listOf(
-        Color(0xFF45B8A0),
-        Color(0xFF93B84C),
-        Color(0xFFD6B23A),
-        Color(0xFFDC7A48),
-        Color(0xFFB94141),
+        RewardGreen,
+        Color(0xFFD6C64A),
+        Color(0xFFE09B3C),
+        Color(0xFFD96A3E),
+        Color(0xFFA83535),
         Color(0xFF0B0A0B),
     )
 }
@@ -60,10 +70,8 @@ object AgeRamp {
  *
  * Dolny koniec jest ciemnoszary, a nie czarny. Czern zarezerwowana jest dla zaleglosci
  * i banner witajacy czernia o siodmej rano bylby oskarzeniem, zanim dzien sie zaczal -
- * czyli dokladnie ta pulapka, w ktora wpadl pasek starzenia.
- *
- * Gorny koniec spotyka sie z pierwszym przystankiem [AgeRamp]: "swieze" i "zrobione"
- * to ten sam kolor, bo to ta sama dobra wiadomosc.
+ * czyli dokladnie ta pulapka, w ktora wpadl pasek starzenia. Droga wiedzie od zimnej
+ * szarosci ku cieplej limonce, wiec sam odcien ociepla sie razem z dorobkiem.
  */
 object DoneRamp {
     /** Ile rzeczy dziennie daje pelna zielen. */
@@ -71,15 +79,15 @@ object DoneRamp {
 
     val light = listOf(
         Color(0xFF4A5560),
-        Color(0xFF45766A),
-        Color(0xFF3A9078),
-        Color(0xFF2E9B86),
+        Color(0xFF5E7454),
+        Color(0xFF779551),
+        RewardGreen,
     )
 
     val dark = listOf(
         Color(0xFF5A6672),
-        Color(0xFF4E8478),
-        Color(0xFF43A78D),
-        Color(0xFF45B8A0),
+        Color(0xFF6E8560),
+        Color(0xFF85A557),
+        RewardGreen,
     )
 }
