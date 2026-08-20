@@ -11,6 +11,50 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-19 · Termin i powtarzanie w jednym oknie
+
+Powtarzanie było osobnym arkuszem, doklejanym do istniejącego zadania. Dodanie czynszu
+zajmowało przez to sześć kroków: dopisz zwykłe zadanie, wybierz datę, otwórz arkusz akcji,
+dopiero tam ustaw regułę. Teraz okno wyboru daty ma przełącznik „Powtarzaj”, a pod nim
+regułę — trzy kroki i jedno okno.
+
+Sedno jest takie, że powtarzanie **jest własnością terminu**, a nie osobnym bytem. Skoro
+mieszka w tym samym rekordzie co data, to i ustawia się je w tym samym miejscu. Arkusz akcji
+zachował dwa wejścia („Zaplanuj na inny dzień” i „Powtarzanie: …”), ale oba otwierają to samo
+okno — drugie tylko z sekcją powtarzania już rozwiniętą.
+
+Odrzucone: rozpoznawanie reguły ze słów w tytule („czynsz co miesiąc 10”). Najszybsze, kiedy
+trafi, ale przy chybieniu ustawia po cichu złą regułę albo zostawia śmieci w tytule, więc i tak
+trzeba by dobudować widoczne potwierdzenie — czyli to samo okno, tylko okrężną drogą.
+
+Zapis terminu i reguły idzie jedną metodą repozytorium, nie dwoma składanymi w UI: obie rzeczy
+siedzą w tym samym rekordzie i dwa osobne odczyty z zapisem mogłyby się wzajemnie nadpisać.
+
+**Ślad:** `ui/components/ScheduleDialog.kt`, `TodoRepository.plan`.
+
+## 2026-08-19 · Kalendarz nie pozwala wybrać dnia z przeszłości
+
+Dało się zaplanować zadanie na wczoraj, po czym znikało z Planu prosto na listę zaległości —
+z przyciemnionym paskiem, jakby wisiało tam od dawna. Dni wcześniejsze niż dziś są teraz
+w kalendarzu nieklikalne, w obu miejscach, gdzie się go używa: przy terminie zadania i przy
+dacie powrotu z urlopu.
+
+Zaległości dalej powstają — ale wyłącznie przez rollover, czyli przez to, że czegoś naprawdę
+nie zrobiłaś. To jedyna uczciwa droga do zaległości i nie ma powodu dawać drugiej, ręcznej.
+
+**Ślad:** `rememberFutureDatePickerState`.
+
+## 2026-08-19 · Odhaczony nawyk schodzi do „Zrobionych”
+
+Odhaczony todos znikał z sekcji i lądował w „Zrobionych”, a odhaczony nawyk zostawał w miejscu
+z ptaszkiem. Ta sama czynność dawała dwa różne efekty. Teraz sekcja „Nawyki” pokazuje wyłącznie
+to, co jeszcze przed tobą.
+
+W „Zrobionych” nawyk jest nadal rysowany jako nawyk, z paskiem momentum — zwykły wiersz zabrałby
+jedyną informację o tym, co odhaczenie właśnie dało.
+
+**Ślad:** `ui/today/TodayScreen.kt`.
+
 ## 2026-08-19 · Zadanie cykliczne widać w Planie także wtedy, gdy wypada dziś
 
 Plan pokazywał wyłącznie terminy w przyszłości, więc zadanie cykliczne wypadające dziś

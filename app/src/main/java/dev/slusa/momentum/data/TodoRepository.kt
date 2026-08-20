@@ -59,12 +59,47 @@ class TodoRepository(
     }
 
     /**
-     * Ustawia termin. Data w przyszlosci znika z listy glownej i wraca sama tego dnia;
-     * [fromSchedule] rozdziela potem sekcje "z terminem" od recznie oznaczonych.
+     * Ustawia termin i powtarzanie za jednym razem. Data w przyszlosci znika z listy
+     * glownej i wraca sama tego dnia; [Todo.fromSchedule] rozdziela potem sekcje
+     * "z terminem" od recznie oznaczonych.
+     *
+     * Jedna metoda, a nie dwie skladane po stronie UI: termin i regula siedza w tym
+     * samym rekordzie, wiec dwa osobne odczyty i zapisy moglyby sie wzajemnie
+     * nadpisac. [rule] rowne null oznacza "to sie nie powtarza".
      */
-    suspend fun schedule(id: Long, date: LocalDate) {
+    suspend fun plan(id: Long, date: LocalDate, rule: Recurrence?) {
         val todo = dao.byId(id) ?: return
-        dao.update(todo.copy(plannedDate = date, fromSchedule = true, bucket = Bucket.GLOWNE))
+        val existing = todo.recurrenceId?.let { recurrences.byId(it) }
+
+        val ruleId = when {
+            rule == null -> {
+                existing?.let { recurrences.delete(it.id) }
+                null
+            }
+
+            existing != null -> {
+                recurrences.update(rule.copy(id = existing.id))
+                existing.id
+            }
+
+            else -> recurrences.insert(rule.copy(id = 0))
+        }
+
+        dao.update(
+            todo.copy(
+                bucket = Bucket.GLOWNE,
+                plannedDate = date,
+                fromSchedule = true,
+                recurrenceId = ruleId,
+            )
+        )
+    }
+
+    /** Dopisanie od razu z terminem i ewentualna regula - sciezka z ekranu Plan. */
+    suspend fun addScheduled(title: String, date: LocalDate, rule: Recurrence?): Long {
+        val id = add(title = title, plannedDate = date, fromSchedule = true)
+        if (id > 0 && rule != null) plan(id, date, rule)
+        return id
     }
 
     /**
@@ -115,38 +150,6 @@ class TodoRepository(
                 .filter { it.id != todo.id }
                 .forEach { dao.delete(it) }
         }
-    }
-
-    /**
-     * Wpina zadanie w cykl albo podmienia regule, ktora juz ma. Zadanie bez terminu
-     * dostaje dzisiejszy - powtarzanie musi miec od czego liczyc nastepny raz.
-     */
-    suspend fun setRecurrence(id: Long, rule: Recurrence, today: LocalDate = LocalDate.now()) {
-        val todo = dao.byId(id) ?: return
-        val existing = todo.recurrenceId?.let { recurrences.byId(it) }
-
-        val ruleId = if (existing != null) {
-            recurrences.update(rule.copy(id = existing.id))
-            existing.id
-        } else {
-            recurrences.insert(rule.copy(id = 0))
-        }
-
-        dao.update(
-            todo.copy(
-                bucket = Bucket.GLOWNE,
-                plannedDate = todo.plannedDate ?: today,
-                fromSchedule = true,
-                recurrenceId = ruleId,
-            )
-        )
-    }
-
-    /** Zostawia zadanie na liscie, ale juz nie wroci. */
-    suspend fun clearRecurrence(id: Long) {
-        val todo = dao.byId(id) ?: return
-        todo.recurrenceId?.let { recurrences.delete(it) }
-        dao.update(todo.copy(recurrenceId = null))
     }
 
     /** Usuniecie instancji cyklicznej konczy caly cykl - inaczej regula zostalaby sierota. */

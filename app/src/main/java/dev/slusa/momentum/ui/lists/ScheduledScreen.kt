@@ -20,11 +20,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.slusa.momentum.data.Recurrence
 import dev.slusa.momentum.ui.TodoUi
 import dev.slusa.momentum.ui.components.AddBar
 import dev.slusa.momentum.ui.components.DateChip
 import dev.slusa.momentum.ui.components.EmptyState
-import dev.slusa.momentum.ui.components.PickDateDialog
+import dev.slusa.momentum.ui.components.ScheduleDialog
 import dev.slusa.momentum.ui.components.ScreenHeader
 import dev.slusa.momentum.ui.components.SectionHeader
 import dev.slusa.momentum.ui.components.TodoRow
@@ -44,7 +45,7 @@ private val SHORT_DATE: DateTimeFormatter =
 fun ScheduledScreen(
     items: List<TodoUi>,
     today: LocalDate,
-    onAddScheduled: (String, LocalDate) -> Unit,
+    onAddScheduled: (String, LocalDate, Recurrence?) -> Unit,
     onToggleDone: (Long, Boolean) -> Unit,
     onItemClick: (TodoUi) -> Unit,
     modifier: Modifier = Modifier,
@@ -53,11 +54,12 @@ fun ScheduledScreen(
     var pickingDate by remember { mutableStateOf(false) }
 
     if (pickingDate) {
-        PickDateDialog(
+        ScheduleDialog(
             initial = today.plusDays(1),
+            today = today,
             onDismiss = { pickingDate = false },
-            onPicked = { date ->
-                onAddScheduled(draft, date)
+            onPicked = { date, rule ->
+                onAddScheduled(draft, date, rule)
                 draft = ""
                 pickingDate = false
             },

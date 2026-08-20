@@ -27,8 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.slusa.momentum.ui.components.PickDateDialog
-import dev.slusa.momentum.ui.components.RecurrenceSheet
+import dev.slusa.momentum.ui.components.ScheduleDialog
 import dev.slusa.momentum.ui.components.TodoActionsSheet
 import dev.slusa.momentum.ui.icons.MomentumIcons
 import dev.slusa.momentum.ui.habits.HabitEditorSheet
@@ -58,6 +57,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     var tab by rememberSaveable { mutableStateOf(Tab.TODO_) }
     var sheetFor by remember { mutableStateOf<TodoUi?>(null) }
     var dateFor by remember { mutableStateOf<TodoUi?>(null) }
+    // To samo okno co dateFor, tylko z rozwinieta sekcja powtarzania.
     var recurrenceFor by remember { mutableStateOf<TodoUi?>(null) }
     var habitFor by remember { mutableStateOf<HabitUi?>(null) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -208,29 +208,23 @@ fun MomentumShell(vm: MomentumViewModel) {
         )
     }
 
-    recurrenceFor?.let { item ->
-        RecurrenceSheet(
-            item = item,
-            today = todayState.day,
-            onDismiss = { recurrenceFor = null },
-            onSave = { rule ->
-                vm.setRecurrence(item.todo.id, rule)
-                recurrenceFor = null
-            },
-            onClear = {
-                vm.clearRecurrence(item.todo.id)
-                recurrenceFor = null
-            },
-        )
-    }
-
-    dateFor?.let { item ->
-        PickDateDialog(
+    // Termin i powtarzanie to jedno okno. Dwa wejscia rozniace sie tylko tym, czy
+    // sekcja powtarzania jest od razu rozwinieta - zaleznie od tego, po co przyszlas.
+    (dateFor ?: recurrenceFor)?.let { item ->
+        ScheduleDialog(
             initial = item.todo.plannedDate ?: todayState.day.plusDays(1),
-            onDismiss = { dateFor = null },
-            onPicked = { date ->
-                vm.schedule(item.todo.id, date)
+            today = todayState.day,
+            initialRule = item.rule,
+            startWithRecurrence = recurrenceFor != null,
+            confirmLabel = "Zapisz",
+            onDismiss = {
                 dateFor = null
+                recurrenceFor = null
+            },
+            onPicked = { date, rule ->
+                vm.plan(item.todo.id, date, rule)
+                dateFor = null
+                recurrenceFor = null
             },
         )
     }

@@ -58,6 +58,12 @@ fun TodayScreen(
     var draftForToday by remember { mutableStateOf(false) }
     var doneExpanded by remember { mutableStateOf(false) }
 
+    // Odhaczony nawyk schodzi do "Zrobionych" tak samo jak odhaczony todos - sekcja
+    // "Nawyki" ma pokazywac to, co jeszcze przed toba, a nie to, co juz za toba.
+    val openHabits = habits.filter { !it.doneToday }
+    val doneHabits = habits.filter { it.doneToday }
+    val doneCount = state.done.size + doneHabits.size
+
     val submit = {
         if (draft.isNotBlank()) {
             onAdd(draft, draftForToday)
@@ -122,9 +128,9 @@ fun TodayScreen(
             section("Z terminem na dziś", state.withDate, onToggleDone, onToggleToday, onItemClick)
             section("Na dziś", state.markedToday, onToggleDone, onToggleToday, onItemClick)
 
-            if (habits.isNotEmpty()) {
-                item(key = "naglowek-nawyki") { SectionHeader("Nawyki", habits.size) }
-                items(habits, key = { "nawyk-${it.habit.id}" }) { item ->
+            if (openHabits.isNotEmpty()) {
+                item(key = "naglowek-nawyki") { SectionHeader("Nawyki", openHabits.size) }
+                items(openHabits, key = { "nawyk-${it.habit.id}" }) { item ->
                     HabitRow(
                         item = item,
                         onToggleDone = { onToggleHabit(item.habit.id, !item.doneToday) },
@@ -135,15 +141,25 @@ fun TodayScreen(
 
             section("Ogólne", state.general, onToggleDone, onToggleToday, onItemClick)
 
-            if (state.done.isNotEmpty()) {
+            if (doneCount > 0) {
                 item(key = "naglowek-zrobione") {
                     CollapsibleHeader(
-                        label = "Zrobione (${state.done.size})",
+                        label = "Zrobione ($doneCount)",
                         expanded = doneExpanded,
                         onClick = { doneExpanded = !doneExpanded },
                     )
                 }
                 if (doneExpanded) {
+                    // Nawyk zostaje nawykiem takze po odhaczeniu - zwykly wiersz zabralby
+                    // pasek momentum, czyli jedyna informacje o tym, co dalo klikniecie.
+                    items(doneHabits, key = { "zrobiony-nawyk-${it.habit.id}" }) { item ->
+                        HabitRow(
+                            item = item,
+                            onToggleDone = { onToggleHabit(item.habit.id, false) },
+                            onClick = { onHabitClick(item) },
+                        )
+                    }
+
                     items(state.done, key = { "zrobione-${it.todo.id}" }) { item ->
                         TodoRow(
                             item = item,
@@ -154,7 +170,7 @@ fun TodayScreen(
                 }
             }
 
-            if (state.isEmpty && habits.isEmpty()) {
+            if (state.isEmpty && openHabits.isEmpty()) {
                 item(key = "pusto") {
                     EmptyState("Czysto.", "Dopisz coś na dole ekranu.")
                 }

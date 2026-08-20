@@ -55,6 +55,8 @@ fun SettingsScreen(
     if (pickingReturn) {
         PickDateDialog(
             initial = vacation?.until ?: today.plusWeeks(1),
+            today = today,
+            confirmLabel = "Ustaw powrót",
             onDismiss = { pickingReturn = false },
             onPicked = {
                 onStartVacation(it)
