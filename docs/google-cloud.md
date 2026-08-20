@@ -45,11 +45,28 @@ not configured yet" z przyciskiem **Get started**. Kliknij go — to kreator na 
 **Finish**
 - Zaznacz zgodę na *Google API Services: User Data Policy* → **Create**
 
-Logo, strony domowej i polityki prywatności nie wypełniaj — są potrzebne dopiero przy
-weryfikacji, przez którą nie przechodzimy.
-
 Po zamknięciu kreatora pozycje w lewym menu (Branding, Audience, Clients, Data Access)
 przestaną być puste. Dopiero teraz da się zrobić kolejne kroki.
+
+### Dokończ stronę Branding
+
+Kreator zwykle nie wypełnia wszystkiego i na stronie **Audience** wisi wtedy żółty pasek
+„Your app's OAuth configuration is incomplete", a przycisk **Publish app** jest wyszarzony.
+Wejdź w **Branding** i uzupełnij:
+
+- **App name**: `Momentum`
+- **User support email**: twój adres
+- **Developer contact information** (na dole): ten sam adres
+
+**Zostaw puste:** App logo, Application home page, Application privacy policy link,
+Application terms of service link, Authorized domains.
+
+> ⚠️ To nie jest kwestia wygody. Wpisanie **jakiegokolwiek adresu URL** w sekcji App domain
+> sprawia, że Google zażąda dodania i **zweryfikowania domeny** — potwierdzenia, że jesteś
+> jej właścicielką. Bez własnej strony internetowej nie ma z tego wyjścia. Aplikacja
+> z pustymi polami publikuje się bez przeszkód.
+
+Zapisz i wróć na **Audience** — dopiero teraz publikacja będzie możliwa.
 
 ## 4. Zakres uprawnień
 
