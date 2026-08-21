@@ -64,10 +64,14 @@ class ReminderWorker(
 
         return Digest(
             tasks = open.map { DigestItem(it.id, it.title, habit = false) },
+            // Nawyki codzienne nie trafiaja do podsumowania. O tym, ze codzienne wypada
+            // dzisiaj, wiadomo z definicji, wiec wypelnialyby liste bez wnoszenia
+            // informacji - a te w wybrane dni tygodnia latwo przeoczyc i to je warto
+            // przypomniec.
             habits = if (onVacation) {
                 emptyList()
             } else {
-                habits.filter { it.isScheduledOn(today) && it.id !in doneToday }
+                habits.filter { !it.daily && it.isScheduledOn(today) && it.id !in doneToday }
                     .map { DigestItem(it.id, it.name, habit = true) }
             },
             overdue = open.count { it.plannedDate!!.isBefore(today) },

@@ -11,6 +11,37 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-21 · Jedno powiadomienie zamiast stosu, kosztem odhaczania z powiadomienia
+
+Pierwszy prawdziwy poranek z przypomnieniami obnażył błąd w projekcie z etapu 6. Układ grupowy —
+podsumowanie plus osobny kafelek na każdą rzecz — powstał po to, żeby dało się odhaczać bez
+otwierania aplikacji, bo Android daje najwyżej trzy przyciski na powiadomienie. Rozumowanie było
+poprawne, a wniosek zły: przy kilku zadaniach dzień zaczynał się od sześcioelementowego stosu.
+
+Podsumowanie ma się przeczytać jednym spojrzeniem. Zostało więc jedno powiadomienie z listą
+w środku, a **odhaczanie prosto z powiadomienia zniknęło** — świadomie łamiemy tu punkt z sekcji 06
+spec. Gdyby zaczęło brakować, wracają przyciski dla trzech pierwszych pozycji; na razie to byłby
+kompromis rozwiązujący problem, którego nie ma. `DoneReceiver` usunięty razem z wpisem w manifeście,
+bo kod bez ścieżki wywołania wygląda jak funkcja, a nią nie jest.
+
+**Nawyki codzienne wypadły z podsumowania.** To, że codzienne wypada dzisiaj, wiadomo z definicji —
+wypełniały listę, nie wnosząc informacji. Zostają te w wybrane dni tygodnia, bo właśnie je łatwo
+przeoczyć.
+
+**Ślad:** `notifications/Notifications.kt`, `ReminderWorker.buildDigest`, spec sekcja 06.
+
+## 2026-08-21 · Lista wraca na górę po dopisaniu
+
+Nowa rzecz ląduje na górze listy, a pisze się na dole ekranu. Przy dłuższej liście dodanie
+wyglądało jak brak reakcji — wpisujesz, zatwierdzasz i nic się nie zmienia w polu widzenia.
+
+Rozważane było odwrócenie kolejności, żeby nowe lądowało na dole przy pasku, ale to zepsułoby
+sens listy: najświeższe rzeczy mają być pierwsze pod ręką, a nie zakopane pod tygodniem zaległości.
+Ekran przewija się więc na górę po każdym dopisaniu. Dotyczy ToDo, Kiedyś i zakupów; nawyki nie,
+bo tam nowy wpis ląduje na końcu.
+
+**Ślad:** `TodayScreen`, `SomedayScreen`, `ShoppingScreen`.
+
 ## 2026-08-20 · Podlisty zakupów, ale lista główna bez własnego wiersza
 
 Zakupy dostały nazwane podlisty — Ikea, Rossmann, przez internet — domyślnie zwinięte pod listą

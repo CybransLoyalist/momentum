@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -17,9 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.BuildConfig
 import dev.slusa.momentum.ui.HabitUi
@@ -67,10 +70,16 @@ fun TodayScreen(
     val doneHabits = habits.filter { it.doneToday }
     val doneCount = state.done.size + doneHabits.size
 
+    // Nowa rzecz laduje na gorze listy, a piszesz na dole ekranu - bez przewiniecia
+    // dodanie wyglada jak brak reakcji.
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
     val submit = {
         if (draft.isNotBlank()) {
             onAdd(draft, draftForToday)
             draft = ""
+            scope.launch { listState.animateScrollToItem(0) }
         }
     }
 
@@ -116,6 +125,7 @@ fun TodayScreen(
         },
     ) { inner ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner),

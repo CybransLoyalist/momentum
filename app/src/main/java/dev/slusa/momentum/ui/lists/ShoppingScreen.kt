@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -29,10 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardActions
@@ -73,6 +76,11 @@ fun ShoppingScreen(
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
+
+    // Nowa rzecz laduje na gorze listy - patrz TodayScreen.
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
     // Kupione domyslnie zwiniete - to archiwum na jedno klikniecie wstecz, a nie tresc,
     // ktora trzeba miec przed oczami.
     var doneExpanded by rememberSaveable { mutableStateOf(false) }
@@ -143,12 +151,14 @@ fun ShoppingScreen(
                     if (draft.isNotBlank()) {
                         onAdd(draft, null)
                         draft = ""
+                        scope.launch { listState.animateScrollToItem(0) }
                     }
                 },
             )
         },
     ) { inner ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner),
