@@ -90,6 +90,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     val allHabits by vm.habitsState.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val backupMessage by vm.backupMessage.collectAsStateWithLifecycle()
+    val lastAddedId by vm.lastAddedId.collectAsStateWithLifecycle()
     val foundSnapshot by vm.foundSnapshot.collectAsStateWithLifecycle()
     val shareRequest by vm.shareRequest.collectAsStateWithLifecycle()
 
@@ -192,6 +193,8 @@ fun MomentumShell(vm: MomentumViewModel) {
                     onHabitClick = { habitFor = it },
                     vacationActive = settings.vacation != null,
                     onOpenSettings = { showSettings = true },
+                    lastAddedId = lastAddedId,
+                    onAddedShown = vm::consumeLastAdded,
                 )
 
                 Tab.KIEDYS -> SomedayScreen(

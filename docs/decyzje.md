@@ -30,17 +30,27 @@ przeoczyć.
 
 **Ślad:** `notifications/Notifications.kt`, `ReminderWorker.buildDigest`, spec sekcja 06.
 
-## 2026-08-21 · Lista wraca na górę po dopisaniu
+## 2026-08-21 · Ekran przewija się do dopisanej rzeczy, nie na górę
 
-Nowa rzecz ląduje na górze listy, a pisze się na dole ekranu. Przy dłuższej liście dodanie
-wyglądało jak brak reakcji — wpisujesz, zatwierdzasz i nic się nie zmienia w polu widzenia.
+Nowa rzecz ląduje na górze swojej sekcji, a pisze się na dole ekranu — przy dłuższej liście
+dodanie wyglądało jak brak reakcji.
 
-Rozważane było odwrócenie kolejności, żeby nowe lądowało na dole przy pasku, ale to zepsułoby
-sens listy: najświeższe rzeczy mają być pierwsze pod ręką, a nie zakopane pod tygodniem zaległości.
-Ekran przewija się więc na górę po każdym dopisaniu. Dotyczy ToDo, Kiedyś i zakupów; nawyki nie,
-bo tam nowy wpis ląduje na końcu.
+Pierwsze podejście przewijało na górę ekranu i **nie zadziałało**, choć kod robił dokładnie to,
+co miał. Rzecz dopisana bez „dziś" trafia do sekcji „Ogólne", która na liście ToDo jest
+przedostatnia — pod terminami, dzisiejszymi i nawykami. Przewinięcie na samą górę odsuwało ją
+od oka bardziej, niż gdyby nie było żadnego przewijania. Błąd był w założeniu „na górze listy",
+nie w implementacji.
 
-**Ślad:** `TodayScreen`, `SomedayScreen`, `ShoppingScreen`.
+Teraz ekran celuje w **konkretną dopisaną rzecz**, a jeśli tuż nad nią stoi nagłówek sekcji, to
+w nagłówek — żeby było widać, dokąd wpadła. Wymagało to zbudowania listy ToDo jako zwykłej listy
+obiektów, rysowanej dopiero potem: budowana wprost w `LazyColumn` nie pozwalała powiedzieć, pod
+którym indeksem wyląduje konkretne zadanie. Efekt czeka na listę zawierającą nowy wiersz, bo zapis
+do bazy jest asynchroniczny i w chwili dopisania tego wiersza jeszcze nie ma.
+
+Kiedyś i zakupy zostają przy przewijaniu na górę — tam lista jest płaska i góra to naprawdę
+miejsce, w którym rzecz się pojawia. Nawyki bez zmian, bo tam nowy wpis ląduje na końcu.
+
+**Ślad:** `TodayScreen.TodayRow`, `MomentumViewModel.lastAddedId`.
 
 ## 2026-08-20 · Podlisty zakupów, ale lista główna bez własnego wiersza
 

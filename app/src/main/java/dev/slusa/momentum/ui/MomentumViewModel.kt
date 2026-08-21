@@ -280,13 +280,24 @@ class MomentumViewModel(
 
     // --- todosy ---
 
+    /**
+     * Ostatnio dopisana rzecz. Ekran przewija sie do niej, bo dopisujesz na dole,
+     * a rzecz laduje na gorze swojej sekcji - czasem poza polem widzenia.
+     */
+    val lastAddedId: MutableStateFlow<Long?> = MutableStateFlow(null)
+
+    fun consumeLastAdded() {
+        lastAddedId.value = null
+    }
+
     fun add(title: String, bucket: Bucket = Bucket.GLOWNE, forToday: Boolean = false) =
         viewModelScope.launch {
-            todos.add(
+            val id = todos.add(
                 title = title,
                 bucket = bucket,
                 plannedDate = if (forToday) today.value else null,
             )
+            if (id > 0) lastAddedId.value = id
         }
 
     fun addTask(title: String, date: LocalDate?, rule: Recurrence?) = viewModelScope.launch {
