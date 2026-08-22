@@ -14,13 +14,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.ui.TodoUi
@@ -40,19 +39,30 @@ fun SomedayScreen(
     onToggleDone: (Long, Boolean) -> Unit,
     onMoveToMain: (Long) -> Unit,
     onItemClick: (TodoUi) -> Unit,
+    lastAddedId: Long?,
+    onAddedShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
 
-    // Nowa rzecz laduje na gorze listy - patrz TodayScreen.
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
+
+    // Przewijamy dopiero wtedy, gdy rzecz faktycznie jest na liscie. Zapis do bazy jest
+    // asynchroniczny, a lista z kluczami trzyma pozycje przy dotychczasowym pierwszym
+    // wierszu - skok "na gore" wykonany przed wstawieniem konczy sie tym, ze nowa rzecz
+    // laduje tuz ponad widokiem.
+    LaunchedEffect(lastAddedId, items) {
+        val id = lastAddedId ?: return@LaunchedEffect
+        if (items.none { it.todo.id == id }) return@LaunchedEffect
+
+        listState.animateScrollToItem(0)
+        onAddedShown()
+    }
 
     val submit = {
         if (draft.isNotBlank()) {
             onAdd(draft)
             draft = ""
-            scope.launch { listState.animateScrollToItem(0) }
         }
     }
 

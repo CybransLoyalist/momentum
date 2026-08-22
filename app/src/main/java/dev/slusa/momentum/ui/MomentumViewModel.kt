@@ -323,7 +323,8 @@ class MomentumViewModel(
     fun clearShoppingDone() = viewModelScope.launch { todos.clearCompleted(Bucket.ZAKUPY) }
 
     fun addShoppingItem(title: String, listId: Long?) = viewModelScope.launch {
-        todos.add(title, bucket = Bucket.ZAKUPY, shoppingListId = listId)
+        val id = todos.add(title, bucket = Bucket.ZAKUPY, shoppingListId = listId)
+        if (id > 0) lastAddedId.value = id
     }
 
     fun addShoppingList(name: String) = viewModelScope.launch { todos.addShoppingList(name) }

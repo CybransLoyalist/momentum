@@ -203,6 +203,8 @@ fun MomentumShell(vm: MomentumViewModel) {
                     onToggleDone = vm::setDone,
                     onMoveToMain = { vm.moveTo(it, dev.slusa.momentum.data.Bucket.GLOWNE) },
                     onItemClick = { sheetFor = it },
+                    lastAddedId = lastAddedId,
+                    onAddedShown = vm::consumeLastAdded,
                 )
 
                 Tab.ZAPLANOWANE -> ScheduledScreen(
@@ -222,6 +224,8 @@ fun MomentumShell(vm: MomentumViewModel) {
                     onAddList = vm::addShoppingList,
                     onRenameList = vm::renameShoppingList,
                     onDeleteList = vm::deleteShoppingList,
+                    lastAddedId = lastAddedId,
+                    onAddedShown = vm::consumeLastAdded,
                 )
 
                 Tab.NAWYKI -> HabitsScreen(

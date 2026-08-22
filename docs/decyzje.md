@@ -47,8 +47,13 @@ obiektów, rysowanej dopiero potem: budowana wprost w `LazyColumn` nie pozwalał
 którym indeksem wyląduje konkretne zadanie. Efekt czeka na listę zawierającą nowy wiersz, bo zapis
 do bazy jest asynchroniczny i w chwili dopisania tego wiersza jeszcze nie ma.
 
-Kiedyś i zakupy zostają przy przewijaniu na górę — tam lista jest płaska i góra to naprawdę
-miejsce, w którym rzecz się pojawia. Nawyki bez zmian, bo tam nowy wpis ląduje na końcu.
+Kiedyś i zakupy zostały poprawione tym samym mechanizmem dzień później — z tego samego powodu,
+którego wtedy nie zobaczyłem: **lista z kluczami trzyma pozycję przy dotychczasowym pierwszym
+wierszu**. Skok „na górę" wykonany zaraz po dopisaniu, jeszcze przed zapisem do bazy, kończy się
+tym, że rzecz wstawiona nad tym wierszem ląduje tuż ponad widokiem. Przewijanie działało, tylko
+zawsze o jedną pozycję za wcześnie.
+
+Nawyki bez zmian, bo tam nowy wpis ląduje na końcu.
 
 **Ślad:** `TodayScreen.TodayRow`, `MomentumViewModel.lastAddedId`.
 

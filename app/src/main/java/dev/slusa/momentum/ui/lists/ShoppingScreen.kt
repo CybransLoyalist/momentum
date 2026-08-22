@@ -2,18 +2,18 @@ package dev.slusa.momentum.ui.lists
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -27,19 +27,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import dev.slusa.momentum.data.ShoppingList
 import dev.slusa.momentum.ui.ShoppingListUi
@@ -51,6 +48,49 @@ import dev.slusa.momentum.ui.components.EmptyState
 import dev.slusa.momentum.ui.components.ScreenHeader
 import dev.slusa.momentum.ui.components.SectionHeader
 import dev.slusa.momentum.ui.components.TodoRow
+
+/**
+ * Jeden wiersz ekranu zakupow.
+ *
+ * Lista powstaje jako zwykla lista obiektow, a dopiero potem jest rysowana. Budowana
+ * wprost w LazyColumn nie pozwalala powiedziec, pod ktorym indeksem wyladuje konkretna
+ * rzecz - a bez tego nie ma jak przewinac ekranu do wlasnie dopisanej.
+ */
+private sealed interface ShoppingRow {
+    val key: String
+
+    data class Item(val item: TodoUi) : ShoppingRow {
+        override val key: String = "rzecz-${item.todo.id}"
+    }
+
+    data object Empty : ShoppingRow {
+        override val key: String = "pusto"
+    }
+
+    data class ListsHeader(val count: Int) : ShoppingRow {
+        override val key: String = "naglowek-listy"
+    }
+
+    data class ListHead(val entry: ShoppingListUi, val expanded: Boolean) : ShoppingRow {
+        override val key: String = "lista-${entry.list.id}"
+    }
+
+    data class InlineAddRow(val listId: Long, val name: String) : ShoppingRow {
+        override val key: String = "dopisz-$listId"
+    }
+
+    data object NewList : ShoppingRow {
+        override val key: String = "nowa-lista"
+    }
+
+    data class DoneHeader(val count: Int) : ShoppingRow {
+        override val key: String = "naglowek-kupione"
+    }
+
+    data class DoneItem(val item: TodoUi) : ShoppingRow {
+        override val key: String = "kupione-${item.todo.id}"
+    }
+}
 
 /**
  * Zero dat, zero starzenia, zero ceregieli.
@@ -73,14 +113,11 @@ fun ShoppingScreen(
     onAddList: (String) -> Unit,
     onRenameList: (ShoppingList, String) -> Unit,
     onDeleteList: (Long) -> Unit,
+    lastAddedId: Long?,
+    onAddedShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf("") }
-
-    // Nowa rzecz laduje na gorze listy - patrz TodayScreen.
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-
     // Kupione domyslnie zwiniete - to archiwum na jedno klikniecie wstecz, a nie tresc,
     // ktora trzeba miec przed oczami.
     var doneExpanded by rememberSaveable { mutableStateOf(false) }
@@ -89,6 +126,33 @@ fun ShoppingScreen(
     var creatingList by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf<ShoppingList?>(null) }
     var deleting by remember { mutableStateOf<ShoppingListUi?>(null) }
+
+    val listState = rememberLazyListState()
+
+    val rows = remember(state, expandedLists, doneExpanded) {
+        buildRows(state, expandedLists, doneExpanded)
+    }
+
+    /*
+     * Przewijanie do dopisanej rzeczy, dopiero gdy juz jest na liscie.
+     *
+     * Skok wykonany od razu po dopisaniu nic nie daje: zapis do bazy jest asynchroniczny,
+     * a lista z kluczami trzyma pozycje przy dotychczasowym pierwszym wierszu - rzecz
+     * wstawiona nad nim laduje wtedy tuz ponad widokiem, czyli dokladnie tam, gdzie jej
+     * nie widac.
+     */
+    LaunchedEffect(lastAddedId, rows) {
+        val id = lastAddedId ?: return@LaunchedEffect
+        val index = rows.indexOfFirst { it is ShoppingRow.Item && it.item.todo.id == id }
+        if (index < 0) return@LaunchedEffect
+
+        // Naglowek nad rzecza mowi, na ktora liste wpadla - warto go pokazac razem z nia.
+        val above = rows.getOrNull(index - 1)
+        val target = if (above is ShoppingRow.ListHead) index - 1 else index
+
+        listState.animateScrollToItem(target)
+        onAddedShown()
+    }
 
     if (creatingList) {
         NameDialog(
@@ -151,7 +215,6 @@ fun ShoppingScreen(
                     if (draft.isNotBlank()) {
                         onAdd(draft, null)
                         draft = ""
-                        scope.launch { listState.animateScrollToItem(0) }
                     }
                 },
             )
@@ -165,108 +228,109 @@ fun ShoppingScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(state.open, key = { "glowne-${it.todo.id}" }) { item ->
-                TodoRow(
-                    item = item,
-                    onToggleDone = { onToggleDone(item.todo.id, true) },
-                    onClick = { onItemClick(item) },
-                )
-            }
+            items(rows, key = { it.key }) { row ->
+                when (row) {
+                    is ShoppingRow.Item -> TodoRow(
+                        item = row.item,
+                        onToggleDone = { onToggleDone(row.item.todo.id, true) },
+                        onClick = { onItemClick(row.item) },
+                    )
 
-            if (state.open.isEmpty() && state.lists.isEmpty() && state.done.isEmpty()) {
-                item {
-                    EmptyState("Nic do kupienia.", "Dopisz na dole, co ma się znaleźć w koszyku.")
-                }
-            }
+                    ShoppingRow.Empty -> EmptyState(
+                        "Nic do kupienia.",
+                        "Dopisz na dole, co ma się znaleźć w koszyku.",
+                    )
 
-            item(key = "naglowek-listy") { SectionHeader("Listy", state.lists.size) }
+                    is ShoppingRow.ListsHeader -> SectionHeader("Listy", row.count)
 
-            state.lists.forEach { entry ->
-                val expanded = entry.list.id in expandedLists
-
-                item(key = "lista-${entry.list.id}") {
-                    ListHeader(
-                        entry = entry,
-                        expanded = expanded,
+                    is ShoppingRow.ListHead -> ListHeader(
+                        entry = row.entry,
+                        expanded = row.expanded,
                         onToggle = {
-                            expandedLists = if (expanded) {
-                                expandedLists - entry.list.id
+                            expandedLists = if (row.expanded) {
+                                expandedLists - row.entry.list.id
                             } else {
-                                expandedLists + entry.list.id
+                                expandedLists + row.entry.list.id
                             }
                         },
-                        onRename = { renaming = entry.list },
-                        onDelete = { deleting = entry },
+                        onRename = { renaming = row.entry.list },
+                        onDelete = { deleting = row.entry },
                     )
-                }
 
-                if (expanded) {
-                    items(entry.open, key = { "poz-${it.todo.id}" }) { item ->
-                        TodoRow(
-                            item = item,
-                            onToggleDone = { onToggleDone(item.todo.id, true) },
-                            onClick = { onItemClick(item) },
-                        )
+                    is ShoppingRow.InlineAddRow -> InlineAdd(
+                        placeholder = "Dopisz do ${row.name}",
+                        onSubmit = { onAdd(it, row.listId) },
+                    )
+
+                    ShoppingRow.NewList -> TextButton(
+                        onClick = { creatingList = true },
+                        contentPadding = PaddingValues(vertical = 4.dp),
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("Nowa lista")
                     }
 
-                    item(key = "dopisz-${entry.list.id}") {
-                        InlineAdd(
-                            placeholder = "Dopisz do ${entry.list.name}",
-                            onSubmit = { onAdd(it, entry.list.id) },
-                        )
-                    }
-                }
-            }
-
-            item(key = "nowa-lista") {
-                TextButton(
-                    onClick = { creatingList = true },
-                    contentPadding = PaddingValues(vertical = 4.dp),
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Nowa lista")
-                }
-            }
-
-            if (state.done.isNotEmpty()) {
-                item(key = "naglowek-kupione") {
-                    Row(
+                    is ShoppingRow.DoneHeader -> Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(Modifier.weight(1f)) {
                             CollapsibleHeader(
-                                label = "Kupione (${state.done.size})",
+                                label = "Kupione (${row.count})",
                                 expanded = doneExpanded,
                                 onClick = { doneExpanded = !doneExpanded },
                             )
                         }
                         TextButton(onClick = onClearDone) {
-                            Text(
-                                text = "Wyczyść",
-                                style = MaterialTheme.typography.labelSmall,
-                            )
+                            Text("Wyczyść", style = MaterialTheme.typography.labelSmall)
                         }
                     }
-                }
 
-                if (doneExpanded) {
-                    items(state.done, key = { "kupione-${it.todo.id}" }) { item ->
-                        TodoRow(
-                            item = item,
-                            onToggleDone = { onToggleDone(item.todo.id, false) },
-                            onClick = { onItemClick(item) },
-                            // Skad rzecz pochodzi ma znaczenie wlasnie tutaj: po cofnieciu
-                            // wroci na swoja podliste, a nie na te, ktora masz przed oczami.
-                            trailing = item.listName?.let { name ->
-                                { Text(name, style = MaterialTheme.typography.labelSmall) }
-                            },
-                        )
-                    }
+                    is ShoppingRow.DoneItem -> TodoRow(
+                        item = row.item,
+                        onToggleDone = { onToggleDone(row.item.todo.id, false) },
+                        onClick = { onItemClick(row.item) },
+                        // Skad rzecz pochodzi ma znaczenie wlasnie tutaj: po cofnieciu
+                        // wroci na swoja podliste, a nie na te, ktora masz przed oczami.
+                        trailing = row.item.listName?.let { name ->
+                            { Text(name, style = MaterialTheme.typography.labelSmall) }
+                        },
+                    )
                 }
             }
         }
+    }
+}
+
+private fun buildRows(
+    state: ShoppingUiState,
+    expandedLists: Set<Long>,
+    doneExpanded: Boolean,
+): List<ShoppingRow> = buildList {
+    state.open.forEach { add(ShoppingRow.Item(it)) }
+
+    if (state.open.isEmpty() && state.lists.isEmpty() && state.done.isEmpty()) {
+        add(ShoppingRow.Empty)
+    }
+
+    add(ShoppingRow.ListsHeader(state.lists.size))
+
+    state.lists.forEach { entry ->
+        val expanded = entry.list.id in expandedLists
+        add(ShoppingRow.ListHead(entry, expanded))
+
+        if (expanded) {
+            entry.open.forEach { add(ShoppingRow.Item(it)) }
+            add(ShoppingRow.InlineAddRow(entry.list.id, entry.list.name))
+        }
+    }
+
+    add(ShoppingRow.NewList)
+
+    if (state.done.isNotEmpty()) {
+        add(ShoppingRow.DoneHeader(state.done.size))
+        if (doneExpanded) state.done.forEach { add(ShoppingRow.DoneItem(it)) }
     }
 }
 
