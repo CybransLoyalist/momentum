@@ -50,6 +50,12 @@ data class TodoUi(
     val listName: String? = null,
 )
 
+/** Nawyk z wczoraj, o ktory pytamy przy porannym wejsciu do aplikacji. */
+data class CatchUpHabit(
+    val id: Long,
+    val name: String,
+)
+
 data class HabitUi(
     val habit: Habit,
     val momentum: Int = 0,
@@ -122,6 +128,15 @@ class MomentumViewModel(
 
     /** Plik kopii przygotowany do wyslania na zewnatrz. */
     val shareRequest: MutableStateFlow<Uri?> = MutableStateFlow(null)
+
+    /**
+     * Wczorajsze nawyki, ktore wypadaly i nie zostaly odhaczone.
+     *
+     * Czesc nawykow robi sie tuz przed snem i wtedy najlatwiej zapomniec o kliknieciu.
+     * Bez tego momentum karaloby za brak klikniecia, a nie za brak roboty - czyli
+     * mierzyloby cos innego, niz obiecuje.
+     */
+    val catchUp: MutableStateFlow<List<CatchUpHabit>> = MutableStateFlow(emptyList())
 
     val settings: StateFlow<Settings> = settingsStore.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
@@ -268,6 +283,7 @@ class MomentumViewModel(
 
     init {
         viewModelScope.launch { todos.purgeOldCompleted() }
+        checkCatchUp()
         viewModelScope.launch {
             if (backups.isEmpty()) foundSnapshot.value = backups.localSnapshot()
         }
@@ -276,6 +292,50 @@ class MomentumViewModel(
     /** Wolane przy powrocie do aplikacji - lapie zmiane doby bez restartu. */
     fun refreshDay() {
         today.value = LocalDate.now()
+        checkCatchUp()
+    }
+
+    // --- wczorajsze nawyki ---
+
+    /**
+     * Pytamy tylko o **wczoraj** i tylko raz na dobe.
+     *
+     * Siegniecie glebiej w przeszlosc zamienialoby to w formularz do uzupelniania,
+     * a momentum ma mierzyc konsekwencje, nie pamiec do wypelniania zaleglosci.
+     * Dni urlopowe pomijamy, bo one i tak nie licza sie w zadna strone.
+     */
+    private fun checkCatchUp() = viewModelScope.launch {
+        val day = today.value
+        val settings = settingsStore.settings.first()
+        if (settings.lastCatchUp == day) return@launch
+
+        val yesterday = day.minusDays(1)
+        if (settings.vacation?.covers(yesterday) == true) return@launch
+
+        val done = habits.completionsSince(yesterday).first()
+            .filter { it.date == yesterday }
+            .map { it.habitId }
+            .toSet()
+
+        catchUp.value = habits.active().first()
+            .filter {
+                it.isScheduledOn(yesterday) &&
+                    !it.startDate.isAfter(yesterday) &&
+                    it.id !in done
+            }
+            .map { CatchUpHabit(it.id, it.name) }
+    }
+
+    fun confirmCatchUp(ids: Set<Long>) = viewModelScope.launch {
+        val yesterday = today.value.minusDays(1)
+        ids.forEach { habits.setDone(it, yesterday, true) }
+        settingsStore.setLastCatchUp(today.value)
+        catchUp.value = emptyList()
+    }
+
+    fun dismissCatchUp() = viewModelScope.launch {
+        settingsStore.setLastCatchUp(today.value)
+        catchUp.value = emptyList()
     }
 
     // --- todosy ---

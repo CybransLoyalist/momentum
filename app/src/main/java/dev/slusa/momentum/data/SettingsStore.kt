@@ -43,6 +43,12 @@ data class Settings(
     val backupFolder: String? = null,
     /** Dzien ostatniej udanej kopii - jedyny sposob, zeby zobaczyc, ze dziala. */
     val lastBackup: LocalDate? = null,
+    /**
+     * Dzien, w ktorym ostatnio pytalismy o wczorajsze nawyki. Pytamy raz na dobe -
+     * pytanie wracajace przy kazdym wejsciu do aplikacji przestaje byc pytaniem,
+     * a staje sie przeszkoda do odklikania.
+     */
+    val lastCatchUp: LocalDate? = null,
 )
 
 class SettingsStore(private val context: Context) {
@@ -61,6 +67,7 @@ class SettingsStore(private val context: Context) {
             ),
             backupFolder = prefs[BACKUP_FOLDER],
             lastBackup = prefs[LAST_BACKUP]?.let(LocalDate::parse),
+            lastCatchUp = prefs[LAST_CATCH_UP]?.let(LocalDate::parse),
         )
     }
 
@@ -102,6 +109,10 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { prefs -> prefs[LAST_BACKUP] = date.toString() }
     }
 
+    suspend fun setLastCatchUp(date: LocalDate) {
+        context.dataStore.edit { prefs -> prefs[LAST_CATCH_UP] = date.toString() }
+    }
+
     private companion object {
         val VACATION_FROM = stringPreferencesKey("urlop_od")
         val VACATION_UNTIL = stringPreferencesKey("urlop_do")
@@ -111,5 +122,6 @@ class SettingsStore(private val context: Context) {
         val AFTERNOON_AT = stringPreferencesKey("popoludnie_godzina")
         val BACKUP_FOLDER = stringPreferencesKey("kopie_folder")
         val LAST_BACKUP = stringPreferencesKey("kopie_ostatnia")
+        val LAST_CATCH_UP = stringPreferencesKey("nawyki_pytanie")
     }
 }

@@ -38,6 +38,7 @@ import dev.slusa.momentum.ui.components.TodoActionsSheet
 import dev.slusa.momentum.ui.icons.MomentumIcons
 import dev.slusa.momentum.ui.editor.EditorTarget
 import dev.slusa.momentum.ui.editor.TaskEditorScreen
+import dev.slusa.momentum.ui.habits.CatchUpDialog
 import dev.slusa.momentum.ui.habits.HabitEditorSheet
 import dev.slusa.momentum.ui.habits.HabitsScreen
 import dev.slusa.momentum.ui.lists.ScheduledScreen
@@ -91,6 +92,7 @@ fun MomentumShell(vm: MomentumViewModel) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val backupMessage by vm.backupMessage.collectAsStateWithLifecycle()
     val lastAddedId by vm.lastAddedId.collectAsStateWithLifecycle()
+    val catchUp by vm.catchUp.collectAsStateWithLifecycle()
     val foundSnapshot by vm.foundSnapshot.collectAsStateWithLifecycle()
     val shareRequest by vm.shareRequest.collectAsStateWithLifecycle()
 
@@ -106,6 +108,16 @@ fun MomentumShell(vm: MomentumViewModel) {
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         runCatching { context.startActivity(Intent.createChooser(send, "Wyślij kopię")) }
         vm.shareHandled()
+    }
+
+    // Wczorajsze nawyki, o ktore warto zapytac, zanim dzien pojdzie dalej.
+    if (catchUp.isNotEmpty()) {
+        CatchUpDialog(
+            habits = catchUp,
+            yesterday = todayState.day.minusDays(1),
+            onConfirm = vm::confirmCatchUp,
+            onDismiss = vm::dismissCatchUp,
+        )
     }
 
     // Pusta baza plus znaleziona kopia to praktycznie zawsze swiezo przeniesiony telefon.

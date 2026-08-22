@@ -11,6 +11,36 @@ Najnowsze na górze. Nowe wpisy dopisujemy zaraz pod tym nagłówkiem.
 
 ---
 
+## 2026-08-22 · Poranne pytanie o wczorajsze nawyki
+
+Część nawyków robi się tuż przed snem — poczytanie, rozciąganie — i wtedy najłatwiej zapomnieć
+o samym kliknięciu. Momentum karało wtedy za brak kliknięcia, a nie za brak roboty, czyli mierzyło
+coś innego, niż obiecuje.
+
+Przy pierwszym wejściu do aplikacji danego dnia pojawia się pytanie o wczorajsze nawyki, które
+wypadały i nie zostały odhaczone. Zaznaczone trafiają do historii **z wczorajszą datą** — momentum
+liczy się z historii przy każdym odczycie, więc licznik naprawia się sam, a dzisiejsze instancje
+zostają nietknięte i odhacza się je normalnie.
+
+Trzy ograniczenia, wszystkie z tego samego powodu — żeby to zostało pytaniem, a nie formularzem:
+
+**Tylko wczoraj.** Sięganie głębiej zamieniłoby okno w zaległości do uzupełnienia, a momentum ma
+mierzyć konsekwencję, nie pamięć do nadrabiania. Jeśli nie otworzysz aplikacji przez trzy dni, te
+dni przepadają — i tak ma być.
+
+**Raz na dobę.** Pytanie wracające przy każdym wejściu przestaje być pytaniem, a staje się
+przeszkodą do odklikania. Konsekwencja: „Nie teraz" zamyka temat na ten dzień na dobre, bo poza
+tym oknem nie ma innej drogi do odhaczenia nawyku wstecz.
+
+**Zaznaczenia startują puste.** Domyślne zaznaczenie wszystkiego byłoby wygodniejsze w typowym
+przypadku, ale zamieniłoby okno w przycisk „potwierdź" klikany bez patrzenia — i po tygodniu
+licznik pokazywałby konsekwencję, której nie było. Momentum jest jedyną liczbą, którą ta aplikacja
+obiecuje trzymać uczciwie.
+
+Dni urlopowe są pomijane, bo i tak nie liczą się w żadną stronę.
+
+**Ślad:** `MomentumViewModel.checkCatchUp`, `ui/habits/CatchUpDialog.kt`.
+
 ## 2026-08-21 · Jedno powiadomienie zamiast stosu, kosztem odhaczania z powiadomienia
 
 Pierwszy prawdziwy poranek z przypomnieniami obnażył błąd w projekcie z etapu 6. Układ grupowy —
